@@ -1,26 +1,77 @@
 package it.unipv.ingsfw.aerotrack.models;
 
+
+/**
+ * Classe che rappresenta un passeggero nel sistema aeroportuale.
+ * Contiene le informazioni personali del passeggero.
+ */
+
 public class Passeggero {
-	private String nome;
-	private String cognome;
-	private String documento;
-	//  private List<Bagaglio> bagagli;   
 	
+	// Attributi
+	private String nome;                 // Nome del passeggero
+	private String cognome;              // Cognome del passeggero
+	private String documento;            // Numero del documento di identità (passaporto, carta d'identità, etc.)
+	
+	
+	
+	/**
+     * Costruttore per creare un nuovo passeggero.
+     * Inizializza tutti i dati personali e crea la lista bagagli.
+     * 
+     * @param nome Nome del passeggero
+     * @param cognome Cognome del passeggero  
+     * @param documento Numero documento di identità
+     * @throws IllegalArgumentException se i parametri non sono validi
+     */
 	public Passeggero(String nome, String cognome, String documento) {
+		 // Validazione dei parametri
+        if(nome == null || nome.trim().isEmpty()) {
+            throw new IllegalArgumentException("Il nome non può essere vuoto");
+        }
+        if(cognome == null || cognome.trim().isEmpty()) {
+            throw new IllegalArgumentException("Il cognome non può essere vuoto");
+        }
+        if(documento == null || documento.trim().isEmpty()) {
+            throw new IllegalArgumentException("Il documento non può essere vuoto");
+        }
+		
+		 // Inizializzazione degli attributi
 		this.nome = nome;
 		this.cognome = cognome;
-		this.documento = documento;
-		//this.bagagli = new ArrayList<>();
+		this.documento = documento.toUpperCase(); // Standardizza in maiuscolo;
 	}
 	
+	//metodi 
+	/**
+     * Restituisce il nome completo (nome e cognome) del passeggero.
+     * 
+     * @return Nome completo (nome + spazio + cognome)
+     */
 	public String getNomeCompleto() {
-		return nome + "" + cognome;
+		return nome + " " + cognome;
 	}
 	
+	/**
+     * Restituisce il numero del documento di identità.
+     * 
+     * @return Numero documento
+     */
 	public String getDocumento() {
 		return documento;
 	}
 	
-//	public void aggiungiBagaglio      MA quindi mettiamo bagagli come classe o no secondo te?
-
+	
+	/**
+     * Restituisce una rappresentazione testuale del passeggero.
+     * Include nome completo e documento.
+     * 
+     * @return Stringa descrittiva del passeggero
+     */
+    @Override
+    public String toString() {
+        return String.format("Passeggero: %s (Doc: %s)", 
+                           getNomeCompleto(), 
+                           documento);
+    }
 }

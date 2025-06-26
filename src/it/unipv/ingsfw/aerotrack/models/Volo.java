@@ -1,88 +1,255 @@
 package it.unipv.ingsfw.aerotrack.models;
 
+import it.unipv.ingsfw.aerotrack.utils.CalcolaDistanza;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Volo { //consideriamo thread per visualizzare tabellone in tempo reale?
+/**
+ * Classe che rappresenta un volo nel sistema di gestione aeroportuale.
+ * Un volo è caratterizzato da codice identificativo, aeroporti di partenza e destinazione,
+ * orari, velocità e lista delle prenotazioni dei passeggeri.
+ * 
+ * La classe gestisce:
+ * - Prenotazioni dei passeggeri
+ * - Gestione dei ritardi
+ * - Occupazione delle piste
+ * - Stati del volo (programmato, in partenza, in volo, atterrato, cancellato)
+ */
+public class Volo { 
 	
-	private String codice;
-	private Aeroporto partenza;
-	private Aeroporto destinazione;
-	private double velocità;
-	private double orarioPartenza;
-	private List<Prenotazione> prenotazioni;
-	private double ritardo;
+	 /**
+     * Enum per rappresentare i possibili stati di un volo
+     */
+    public enum StatoVolo {
+        PROGRAMMATO,    // Volo programmato ma non ancora in partenza
+        IN_PARTENZA,    // Volo in fase di partenza
+        IN_VOLO,        // Volo in corso
+        ATTERRATO,      // Volo arrivato a destinazione
+        CANCELLATO,     // Volo cancellato
+        RITARDATO       // Volo in ritardo
+    }
+    
+   // Attributi  
+	private String codice;                    // Codice identificativo del volo 
+	private Aeroporto partenza;               // Aeroporto di partenza del volo 
+	private Aeroporto destinazione;           // Aeroporto di destinazione del volo
+	private double velocita;                  // Velocità media del volo in km/h (tipicamente 800 km/h)
+	private double orarioPartenza;            // Orario di partenza
+	private List<Prenotazione> prenotazioni;  // Lista delle prenotazioni associate al volo
+	private double ritardo;                   // Ritardo rispetto all'orario di partenza
+	private StatoVolo stato;                  // Stato attuale del volo
+	private int pistaAssegnata;               // Indice della pista assegnata nell'aeroporto di partenza (-1 se non assegnata)
 	
-	public Volo(String codice, Aeroporto partenza, Aeroporto destinazione) {
+	
+	
+	/**
+     * Costruttore principale per creare un nuovo volo.
+     *Inizializza tutti gli attributi e gestisce l'assegnazione della pista.
+     * 
+     * @param codice Codice identificativo del volo
+     * @param partenza Aeroporto di partenza
+     * @param destinazione Aeroporto di destinazione
+     * @param orarioPartenza Orario programmato di partenza
+     * @param velocita Velocità del volo
+     */
+	public Volo(String codice, Aeroporto partenza, Aeroporto destinazione, double orarioPartenza, double velocita) {
+		
+		// Inizializzazione degli attributi
 		this.codice = codice;
 		this.partenza = partenza;
 		this.destinazione = destinazione;
+		this.orarioPartenza = orarioPartenza;
+		this.velocita = velocita;
 		this.prenotazioni = new ArrayList<>();
-		for(int i=0; i<partenza.getNumeroPiste(); i++) {
-			if(partenza.getPistaOccupata()[i]==null) { 
-				partenza.occupaPista(i, this);           //così o facciamo metodo in Aeroporto? Forse meglio metodo in Aeroporto? ma mi fido di te
-				this.ritardo=0;
-				break;
-			}
-			if(i==partenza.getNumeroPiste()) this.ritardo=calcolaRitardo();
-		}
-		
+        this.ritardo = 0;                        // Inizializzazione ritardo a zero
+        this.stato = StatoVolo.PROGRAMMATO;
+        
+        // Tentativo di assegnazione pista nell'aeroporto di partenza
+        boolean pistaAssegnata = false;
+        
+        // Cerca una pista libera scorrendo tutte le piste disponibili
+        for(int i = 0; i < partenza.getNumeroPiste(); i++) {
+            // Se la pista è libera (null), la assegna al volo
+            if(partenza.getPistaOccupata()[i] == null) { 
+                partenza.occupaPista(i, this);
+                pistaAssegnata = true;
+                break; // Esce dal loop una volta assegnata la pista
+            }
+        }
+        
+        // Se non ha trovato piste libere, calcola il ritardo
+        if(!pistaAssegnata) {
+            this.ritardo = calcolaRitardo();
+        }
 	}
 	
-	public String getCodice() {
+	
+	 /**
+     * Restituisce il codice del volo.
+     * 
+     * @return Codice identificativo del volo
+     */
+	public String getCodice() {       
 		return codice;
 	}
 	
+	/**
+     * Restituisce l'aeroporto di partenza.
+     * 
+     * @return Aeroporto di partenza
+     */
 	public Aeroporto getPartenza() {
 		return partenza;
 	}
 	
+	/**
+     * Restituisce l'aeroporto di destinazione.
+     * 
+     * @return Aeroporto di destinazione
+     */
 	public Aeroporto getDestinazione() {
 	        return destinazione;
-	    }
+	}
 	
+	 /**
+     * Restituisce l'orario di partenza programmato.
+     * 
+     * @return Orario di partenza
+     */
 	public double getOrarioPartenza() {
 		return orarioPartenza;
 	}
+
+	/**
+     * Restituisce il ritardo accumulato dal volo.
+     * 
+     * @return Ritardo in ore
+     */
+    public double getRitardo() {
+        return ritardo;
+    }
 	
-	public double getRitardo() {
-		return ritardo;
-	}
-
-	public List<Prenotazione> getPrenotazioni() {
+    /**
+     * Restituisce la lista delle prenotazioni del volo.
+     * 
+     * @return Lista delle prenotazioni
+     */
+    public List<Prenotazione> getPrenotazioni() {       
 	        return prenotazioni;
-	    }
+    }
 
-	public void aggiungiPrenotazione(Prenotazione p) {
+    /**
+     * Restituisce la velocità del volo.
+     * 
+     * @return Velocità in km/h
+     */
+    public double getVelocita() {
+        return velocita;
+    }
+    
+    
+    /**
+     * Aggiunge una prenotazione al volo.
+     * Controlla che la prenotazione non sia null prima di aggiungerla.
+     * 
+     * @param prenotazione Prenotazione da aggiungere
+     */
+    public void aggiungiPrenotazione(Prenotazione p) {
+    	// Verifica che la prenotazione non sia null
+        if(p != null) {
 	    	prenotazioni.add(p);	
 	    }
-	    
+    }
+	   
+    /**
+     * Cancella una prenotazione basandosi sul documento del passeggero.
+     * Scorre tutte le prenotazioni e marca come cancellata quella corrispondente.
+     * 
+     * @param documento Documento del passeggero da cancellare
+     */
 	public void cancellaPrenotazione(String documento) {
+		 // Scorre tutte le prenotazioni del volo
         for (Prenotazione pr : prenotazioni) {
+            // Controlla se il documento corrisponde
             if (pr.getPasseggero().getDocumento().equals(documento)) {
-                pr.cancellata();
+            	 // Marca la prenotazione come cancellata
+                pr.cancella();
+                break; // Esce dal loop una volta trovata
             }
         }
     }
 
 	
+	/**
+     * Calcola la distanza tra aeroporto di partenza e destinazione.
+     * Utilizza il metodo calcolaDistanza della classe Aeroporto.
+     * 
+     * @return Distanza in chilometri
+     */
     public double getDistanzaKm() {
-        return partenza.calcolaDistanza(destinazione);
+        return CalcolaDistanza.calcolaDistanza(partenza, destinazione);
     }
     
+    /**
+     * Calcola il tempo totale di volo includendo eventuali ritardi.
+     * Formula: (distanza / velocità) + ritardo
+     * 
+     * @return Tempo di volo in ore
+     */
     public double calcolaTempo() {
-    	return (getDistanzaKm() / velocità) + ritardo;
+    	return (getDistanzaKm() / velocita) + ritardo;
     }
 	
+    /**
+     * Calcola il ritardo basandosi sui voli che occupano le piste.
+     * Trova il volo con orario più vicino e calcola la differenza.
+     * 
+     * @return Ritardo calcolato in ore
+     */
     public double calcolaRitardo() {
     	double minRitardo=0;
+    	 // Scorre tutte le piste dell'aeroporto di partenza
     	for(int i=0; i<partenza.getNumeroPiste(); i++) {
-    		if(orarioPartenza-partenza.getPistaOccupata()[i].getOrarioPartenza()<minRitardo) minRitardo=orarioPartenza-partenza.getPistaOccupata()[i].getOrarioPartenza();
-    	}
-    	return minRitardo;
+    		 // Ottiene il volo che occupa la pista i
+            Volo voloOccupante = partenza.getPistaOccupata()[i];
+            
+            // Se la pista è occupata
+            if(voloOccupante != null) {
+                // Calcola la differenza di orario
+                double differenza = orarioPartenza - voloOccupante.getOrarioPartenza();
+                
+                // Mantiene il ritardo minimo (più vicino nel tempo)
+                if(differenza < minRitardo) {
+                    minRitardo = differenza;
+                }
+            }     
+        }
+    	
+    	// Restituisce il valore assoluto del ritardo minimo
+        return Math.abs(minRitardo);
     }
     
-    //  public void stampaDettagliVolo() {}
+    /**
+     * Restituisce una rappresentazione testuale del volo.
+     * Include codice, rotta, orario e stato delle prenotazioni.
+     * 
+     * @return Stringa descrittiva del volo
+     */
+    @Override
+    public String toString() {
+        return String.format("Volo %s: %s -> %s, Partenza: %.2f, Passeggeri: %d", 
+                           codice, 
+                           partenza.getCodice(), 
+                           destinazione.getCodice(),
+                           orarioPartenza);
+    }
     
-
+    /**
+     * Verifica se il volo ha ritardi.
+     * 
+     * @return true se il volo è in ritardo, false altrimenti
+     */
+    public boolean isInRitardo() {
+        return ritardo > 0;
+    }
 }
