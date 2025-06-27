@@ -1,10 +1,12 @@
 package it.unipv.ingsfw.aerotrack.models;
 
+import it.unipv.ingsfw.aerotrack.utils.CalcolaDistanza;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- * Classe che rappresenta un aeroporto nel sistema di gestione voli.
+ * Classe che rappresenta un aeroporto nel sistema di gestione voli Aerotrack.
  * Un aeroporto è caratterizzato da un codice identificativo, coordinate geografiche
  * e un numero di piste disponibili per i voli.
  * 
@@ -16,6 +18,8 @@ import java.util.List;
 
 
 public class Aeroporto {  
+	
+	// Attributi
 	
 	private String codice;                     // Codice IATA dell'Aeroporto
 	private String nome;                       // Nome completo dell'aeroporto
@@ -35,7 +39,7 @@ public class Aeroporto {
     /**
      * Costruttore per creare un nuovo aeroporto.
      * 
-     *  * @param codice Codice IATA dell'aeroporto (deve essere di 3 caratteri)
+     * @param codice Codice IATA dell'aeroporto (deve essere di 3 caratteri)
      * @param nome Nome completo dell'aeroporto
      * @param latitudine Latitudine in gradi decimali (range: -90 a +90)
      * @param longitudine Longitudine in gradi decimali (range: -180 a +180)
@@ -53,15 +57,19 @@ public class Aeroporto {
         	 */
             throw new IllegalArgumentException("Il codice aeroporto deve essere di 3 caratteri");  
         }
-        if (nome == null || nome.trim().isEmpty()) {
+        
+        if (nome == null || nome.isEmpty()) {
             throw new IllegalArgumentException("Il nome dell'aeroporto non può essere vuoto");
         }
+        
         if (latitudine < -90 || latitudine > 90) {
             throw new IllegalArgumentException("La latitudine deve essere tra -90 e +90 gradi");
         }
+        
         if (longitudine < -180 || longitudine > 180) {
             throw new IllegalArgumentException("La longitudine deve essere tra -180 e +180 gradi");
         }
+        
         if (numeroPiste <= 0) {
             throw new IllegalArgumentException("Il numero di piste deve essere maggiore di 0");
         }
@@ -151,6 +159,8 @@ public class Aeroporto {
        return new ArrayList<>(voliInArrivo);
    }
    
+   
+   // METODI PER GESTIONE PISTE
    /**
     * Occupa una pista con un volo.
     * Verifica che l'indice sia valido e che la pista sia libera.
@@ -191,5 +201,21 @@ public class Aeroporto {
    public String toString() {
        return String.format("Aeroporto{codice='%s', nome='%s', coordinate=(%.6f, %.6f), piste=%d, pisteLibere=%d}",
                codice, nome, latitudine, longitudine, numeroPiste);
+   }
+   
+   // Metodi Utils
+   /**
+    * Calcola la distanza tra questo aeroporto e un altro
+    * utilizzando la formula di Haversine.
+    * 
+    * @param altroAeroporto Aeroporto di destinazione
+    * @return Distanza in chilometri
+    * @throws IllegalArgumentException se l'aeroporto è null
+    */
+   public double calcolaDistanza(Aeroporto altroAeroporto) {
+       if (altroAeroporto == null) {
+           throw new IllegalArgumentException("L'aeroporto di destinazione non può essere null");
+       }
+       return CalcolaDistanza.calcolaDistanza(this, altroAeroporto);
    }
 }
