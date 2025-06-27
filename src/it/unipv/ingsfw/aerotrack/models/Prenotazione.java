@@ -7,12 +7,12 @@ package it.unipv.ingsfw.aerotrack.models;
 public class Prenotazione {
 	
 	// Attributi
-	private Passeggero passeggero;      // Passeggero associato alla prenotazione
-	private Volo volo;
-	private boolean cancellata;         // Stato della prenotazione: true se cancellata, false se attiva
-    private String codicePrenotazione;  // Codice univoco della prenotazione (generato automaticamente)
-    private static int contatoreCodici = 1000; // Contatore statico per generare codici prenotazione unici
-   
+	private final Passeggero passeggero;
+    private final Volo volo;
+    private boolean cancellata;
+    private final String codicePrenotazione;
+    private static int contatoreCodici = 1000;
+    
     /**
      * Costruttore per creare una nuova prenotazione.
      * Inizializza la prenotazione come attiva e genera un codice univoco.
@@ -82,9 +82,6 @@ public class Prenotazione {
     @Override
     public String toString() {
         String stato = cancellata ? "CANCELLATA" : "ATTIVA";
-        return String.format("Prenotazione %s - %s [%s]", 
-                           codicePrenotazione,
-                           passeggero.getNomeCompleto(),
-                           stato);
+        return String.format("Prenotazione %s - %s [%s]", codicePrenotazione, passeggero.getNomeCompleto(), stato);
     }
 }

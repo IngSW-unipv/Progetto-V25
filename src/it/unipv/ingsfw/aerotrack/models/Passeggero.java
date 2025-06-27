@@ -1,9 +1,7 @@
 package it.unipv.ingsfw.aerotrack.models;
 
-
 /**
  * Classe che rappresenta un passeggero nel sistema aeroportuale.
- * Contiene le informazioni personali del passeggero.
  */
 
 public class Passeggero {
@@ -26,13 +24,15 @@ public class Passeggero {
      */
 	public Passeggero(String nome, String cognome, String documento) {
 		 // Validazione dei parametri
-        if(nome == null || nome.trim().isEmpty()) {
+        if(nome == null || nome.isEmpty()) {
             throw new IllegalArgumentException("Il nome non può essere vuoto");
         }
-        if(cognome == null || cognome.trim().isEmpty()) {
+        
+        if(cognome == null || cognome.isEmpty()) {
             throw new IllegalArgumentException("Il cognome non può essere vuoto");
         }
-        if(documento == null || documento.trim().isEmpty()) {
+        
+        if(documento == null || documento.isEmpty()) {
             throw new IllegalArgumentException("Il documento non può essere vuoto");
         }
 		
@@ -65,13 +65,9 @@ public class Passeggero {
 	/**
      * Restituisce una rappresentazione testuale del passeggero.
      * Include nome completo e documento.
-     * 
-     * @return Stringa descrittiva del passeggero
      */
     @Override
     public String toString() {
-        return String.format("Passeggero: %s (Doc: %s)", 
-                           getNomeCompleto(), 
-                           documento);
+        return String.format("Passeggero: %s (Doc: %s)", getNomeCompleto(), documento);
     }
 }

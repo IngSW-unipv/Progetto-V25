@@ -8,16 +8,10 @@ import java.util.List;
  * Classe che rappresenta un volo nel sistema di gestione aeroportuale.
  * Un volo è caratterizzato da codice identificativo, aeroporti di partenza e destinazione,
  * orari, velocità e lista delle prenotazioni dei passeggeri.
- * 
- * La classe gestisce:
- * - Prenotazioni dei passeggeri
- * - Gestione dei ritardi
- * - Occupazione delle piste
- * - Stati del volo (programmato, in partenza, in volo, atterrato, cancellato)
  */
 public class Volo { 
 	
-	 /**
+	/**
      * Enum per rappresentare i possibili stati di un volo
      */
     public enum StatoVolo {
@@ -30,16 +24,15 @@ public class Volo {
     }
     
    // Attributi  
-	private String codice;                    // Codice identificativo del volo 
-	private Aeroporto partenza;               // Aeroporto di partenza del volo 
-	private Aeroporto destinazione;           // Aeroporto di destinazione del volo
-	private double velocita;                  // Velocità media del volo in km/h (tipicamente 800 km/h)
-	private double orarioPartenza;            // Orario di partenza
-	private List<Prenotazione> prenotazioni;  // Lista delle prenotazioni associate al volo
-	private double ritardo;                   // Ritardo rispetto all'orario di partenza
-	private StatoVolo stato;                  // Stato attuale del volo
-	private int pistaAssegnata;               // Indice della pista assegnata nell'aeroporto di partenza (-1 se non assegnata)
-	
+    private final String codice;
+    private final Aeroporto partenza;
+    private final Aeroporto destinazione;
+    private final double velocita;
+    private final double orarioPartenza;
+    private final List<Prenotazione> prenotazioni;
+    private double ritardo;
+    private StatoVolo stato;
+    private int pistaAssegnata = -1;
 	
 	
 	/**
@@ -72,6 +65,7 @@ public class Volo {
             // Se la pista è libera (null), la assegna al volo
             if(partenza.getPistaOccupata()[i] == null) { 
                 partenza.occupaPista(i, this);
+                this.pistaAssegnata = i;
                 pistaAssegnata = true;
                 break; // Esce dal loop una volta assegnata la pista
             }
@@ -146,6 +140,10 @@ public class Volo {
     public double getVelocita() {
         return velocita;
     }
+    
+    public StatoVolo getStato() { return stato; }
+    public int getPistaAssegnata() { return pistaAssegnata; }
+
     
     
     /**
@@ -237,12 +235,9 @@ public class Volo {
      */
     @Override
     public String toString() {
-        return String.format("Volo %s: %s -> %s, Partenza: %.2f, Passeggeri: %d", 
-                           codice, 
-                           partenza.getCodice(), 
-                           destinazione.getCodice(),
-                           orarioPartenza);
-    }
+    	 return String.format("Volo %s: %s -> %s, Partenza: %.2f, Passeggeri: %d",
+                 codice, partenza.getCodice(), destinazione.getCodice(), orarioPartenza, prenotazioni.size());
+     }
     
     /**
      * Verifica se il volo ha ritardi.

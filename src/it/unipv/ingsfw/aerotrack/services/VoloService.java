@@ -5,6 +5,10 @@ import java.util.stream.Collectors;
 import it.unipv.ingsfw.aerotrack.dao.*;
 import it.unipv.ingsfw.aerotrack.models.*;
 
+/**
+ * Service per la logica di business dei voli.
+ * Valida i dati e delega la persistenza al DAO.
+ */
 public class VoloService {
 	
 	private VoloDao voloDao;
@@ -16,13 +20,13 @@ public class VoloService {
     }
     
     /**
-     * Creo un nuovo volo con validazione.
+     * Creo un nuovo volo dopo aver validato i dati.
+     * @throws IllegalArgumentException se i dati non sono validi
      */
-    public void creaVolo(String codice, String codicePartenza, String codiceDestinazione, 
-                        double orario, double velocita) {
+    public void creaVolo(String codice, String codicePartenza, String codiceDestinazione, double orario, double velocita) {
         
         // Validazioni
-        if (codice == null || codice.trim().isEmpty()) {
+        if (codice == null || codice.isEmpty()) {
             throw new IllegalArgumentException("Codice volo non può essere vuoto");
         }
         
@@ -33,14 +37,24 @@ public class VoloService {
         if (velocita <= 0 || velocita > 1200) {
             throw new IllegalArgumentException("Velocità deve essere tra 1 e 1200 km/h");
         }
+        
+        Aeroporto partenza = aeroportoDao.cercaPerCodice(codicePartenza);
+        Aeroporto destinazione = aeroportoDao.cercaPerCodice(codiceDestinazione);
+        if (partenza == null || destinazione == null) {
+            throw new IllegalArgumentException("Aeroporto di partenza o destinazione non trovato");
+        }
+        
+        Volo volo = new Volo(codice, partenza, destinazione, orario, velocita);
+        if (!voloDao.aggiungiVolo(volo)) {
+            throw new RuntimeException("Errore nell'inserimento del volo");
+        }
     }
     
     /**
      * Cerca un volo per codice.
      */
     public Volo cercaVolo(String codice) {
-        Volo volo = voloDao.cercaPerCodice(codice);
-        return volo;
+    	return voloDao.cercaPerCodice(codice);
     }
     
     /**

@@ -1,73 +1,62 @@
 package it.unipv.ingsfw.aerotrack.controller;
 
 import it.unipv.ingsfw.aerotrack.models.*;
+import it.unipv.ingsfw.aerotrack.services.AeroportoService;
+import it.unipv.ingsfw.aerotrack.services.VoloService;
+import it.unipv.ingsfw.aerotrack.services.PrenotazioneService;
+
 import java.util.*;
 
 
 public class AeroTrackController {
 	
-	private List<Aeroporto> aeroporti;
-	private List<Volo> voli;
-	private List<Prenotazione> prenotazioni;
-		
-	public  AeroTrackController() {
-		aeroporti = new ArrayList<>();
-		voli = new ArrayList<>();
-		prenotazioni = new ArrayList<>();
-	}
-		
+	private final AeroportoService aeroportoService;
+    private final VoloService voloService;
+    private final PrenotazioneService prenotazioneService;
+
+    public AeroTrackController() {
+        this.aeroportoService = new AeroportoService();
+        this.voloService = new VoloService();
+        this.prenotazioneService = new PrenotazioneService();
+    }
+
 	public void aggiungiAeroporto(String codice, String nome, double latitudine, double longitudine, int numeroPiste) {
-		Aeroporto a = new Aeroporto(codice, nome, latitudine, longitudine, numeroPiste);
-		aeroporti.add(a);
+		aeroportoService.aggiungiAeroporto(codice, nome, latitudine, longitudine, numeroPiste);
+    }
+	
+	public Aeroporto cercaAeroporto(String codice) {
+	    return aeroportoService.cercaAeroporto(codice);
 	}
-		
-	public Volo creaVolo(String codiceVolo, String codicePartenza, String codiceDestinazione) {
-		Aeroporto partenza = cercaAeroporto(codicePartenza);
-		Aeroporto destinazione = cercaAeroporto(codiceDestinazione);
-			
-		if (partenza == null || destinazione == null) {
-			throw new IllegalArgumentException("Aeroporto non trovato.");
-		}
-			
-		Volo v = new Volo(codiceVolo, partenza, destinazione);
-		voli.add(v);
-		return v;	
+
+	public List<Aeroporto> getAeroporti() {
+	    return aeroportoService.getTuttiAeroporti();
+    }
+		  
+	public void creaVolo(String codiceVolo, String codicePartenza, String codiceDestinazione, double orario, double velocita) {
+		voloService.creaVolo(codiceVolo, codicePartenza, codiceDestinazione, orario, velocita);
 	}
+
+	public Volo cercaVolo(String codiceVolo) {
+        return voloService.cercaVolo(codiceVolo);
+    }
+
+    public List<Volo> getVoli() {
+        return voloService.getTuttiVoli();
+    }
 		
 	public void prenotaPasseggero(String nome, String cognome, String documento, String codiceVolo) {
-		Passeggero p = new Passeggero(nome, cognome, documento);
-		Volo v = cercaVolo(codiceVolo);
+		prenotazioneService.creaPrenotazione(nome, cognome, documento, codiceVolo);
+    }
 			
-		if(v == null) {
-			throw new IllegalArgumentException("Volo non trovato.");
-		}
-			
-		Prenotazione pr = new Prenotazione(p,v);
-		prenotazioni.add(pr);
-	}
-		
-	public Aeroporto cercaAeroporto(String codice) {
-		for (Aeroporto a : aeroporti) {
-			if (a.getCodice().equalsIgnoreCase(codice)) return a;
-		}
-		return null;
-	}
-		
-	public Volo cercaVolo(String codiceVolo) {
-		for (Volo v : voli) {
-			if (v.getCodice().equalsIgnoreCase(codiceVolo)) return v;
-		}
-		return null;
-	}
-		
-	public List<Prenotazione> getPrenotazioniAttive(){
-		List<Prenotazione> attive = new ArrayList<>();
-		for(Prenotazione pr : prenotazioni) {
-			if (!pr.isCancellata()) attive.add(pr);
-		}
-		return attive;
-	}
+	public List<Prenotazione> getPrenotazioniAttive() {
+        // Ricava TUTTE le prenotazioni e filtra solo quelle attive.
+        return prenotazioneService.getTuttePrenotazioni()
+                .stream()
+                .filter(p -> !p.isCancellata())
+                .toList();
+    }
 
-}
-
-
+    public List<Prenotazione> getPrenotazioni() {
+        return prenotazioneService.getTuttePrenotazioni();
+    }
+}    

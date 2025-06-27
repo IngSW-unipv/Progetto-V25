@@ -21,19 +21,14 @@ public class Aeroporto {
 	
 	// Attributi
 	
-	private String codice;                     // Codice IATA dell'Aeroporto
-	private String nome;                       // Nome completo dell'aeroporto
-	private double latitudine;                 // Latitudine dell'aeroporto in gradi decimali
-	private double longitudine;                // Longitudine dell'aeroporto in gradi decimali
-	private int numeroPiste;                   // Numero totale di piste disponibili nell'aeroporto
-	private Volo[] pistaOccupata;              /* Rappresenta lo stato di occupazione delle piste.
-	                                              Se pistaOccupata[i] è null, la pista i è libera.
-                                                  Se contiene un oggetto Volo, la pista è occupata da quel volo.
-                                               */
-	
-	private List<Volo> voliInPartenza;         // Lista dei voli in partenza da questo aeroporto
-    private List<Volo> voliInArrivo;           // Lista dei voli in arrivo a questo aeroporto
-     
+	private final String codice; // Codice IATA, maiuscolo (es: MXP)
+    private final String nome;
+    private final double latitudine;
+    private final double longitudine;
+    private final int numeroPiste;
+    private final Volo[] pistaOccupata; // Stato di occupazione delle piste
+    private final List<Volo> voliInPartenza;
+    private final List<Volo> voliInArrivo;
     
     
     /**
@@ -49,7 +44,7 @@ public class Aeroporto {
     
 	public Aeroporto (String codice, String nome, double latitudine, double longitudine, int numeroPiste) {
 		
-		 // Validazione dei parametri di input
+		// Validazione dei parametri di input
         if (codice == null || codice.length() != 3) {
         	/**Il codice IATA (International Air Transport Association) è un codice di tre lettere assegnato a ogni aeroporto nel mondo. 
         	 * Serve per identificare in modo univoco gli aeroporti nei biglietti aerei, nei sistemi di prenotazione, 
@@ -75,13 +70,13 @@ public class Aeroporto {
         }
         
         // Inizializzazione degli attributi
-        this.codice = codice.toUpperCase(); // Standardizza in maiuscolo (i codici IATA ufficiali sono sempre scritti in maiuscolo);
+        this.codice = codice.toUpperCase(); // i codici IATA ufficiali sono sempre scritti in maiuscolo;
 		this.nome = nome;
 		this.latitudine = latitudine;
 		this.longitudine = longitudine;
 		this.numeroPiste = numeroPiste;
-		this.pistaOccupata = new Volo[numeroPiste];  // Inizializza l'array delle piste come tutte libere (null)
-        this.voliInPartenza = new ArrayList<>();     // Inizializza le liste dei voli
+		this.pistaOccupata = new Volo[numeroPiste]; 
+        this.voliInPartenza = new ArrayList<>();     
         this.voliInArrivo = new ArrayList<>();
 	}
 	
@@ -161,15 +156,9 @@ public class Aeroporto {
    
    
    // METODI PER GESTIONE PISTE
+   
    /**
     * Occupa una pista con un volo.
-    * Verifica che l'indice sia valido e che la pista sia libera.
-    * 
-    * @param indicePista Indice della pista da occupare (0-based)
-    * @param volo Volo che occuperà la pista
-    * @return true se l'operazione è riuscita, false altrimenti
-    * @throws IllegalArgumentException se l'indice non è valido
-    * @throws IllegalStateException se la pista è già occupata
     */
    public boolean occupaPista(int indicePista, Volo volo) {
        // Validazione dell'indice della pista
@@ -192,25 +181,12 @@ public class Aeroporto {
        return true;
    }
    
-   /**
-    * Restituisce una rappresentazione testuale dell'aeroporto.
-    * 
-    * @return Stringa che descrive l'aeroporto
-    */
-   @Override
-   public String toString() {
-       return String.format("Aeroporto{codice='%s', nome='%s', coordinate=(%.6f, %.6f), piste=%d, pisteLibere=%d}",
-               codice, nome, latitudine, longitudine, numeroPiste);
-   }
-   
+    
    // Metodi Utils
+   
    /**
     * Calcola la distanza tra questo aeroporto e un altro
     * utilizzando la formula di Haversine.
-    * 
-    * @param altroAeroporto Aeroporto di destinazione
-    * @return Distanza in chilometri
-    * @throws IllegalArgumentException se l'aeroporto è null
     */
    public double calcolaDistanza(Aeroporto altroAeroporto) {
        if (altroAeroporto == null) {
@@ -218,4 +194,15 @@ public class Aeroporto {
        }
        return CalcolaDistanza.calcolaDistanza(this, altroAeroporto);
    }
+   
+   
+   /**
+    * Restituisce una rappresentazione testuale dell'aeroporto.
+    */
+   @Override
+   public String toString() {
+       return String.format("Aeroporto{codice='%s', nome='%s', coordinate=(%.6f, %.6f), piste=%d, pisteLibere=%d}",
+               codice, nome, latitudine, longitudine, numeroPiste);
+   }
+
 }

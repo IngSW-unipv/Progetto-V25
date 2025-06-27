@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import it.unipv.ingsfw.aerotrack.models.*;
 
-/**
- * Data Access Object per la gestione delle prenotazioni nel database.
- */
+
+// Data Access Object per la gestione delle prenotazioni nel database.
+ 
 public class PrenotazioneDao {
 	
 	private static PrenotazioneDao instance; 
@@ -35,7 +35,6 @@ public class PrenotazioneDao {
                 )
                 """;
             stmt.executeUpdate(createTableQuery);
-            stmt.close();
             
         } catch (SQLException e) {
         	// Se c'è un errore nella creazione della tabella, lo stampa
@@ -44,7 +43,7 @@ public class PrenotazioneDao {
         }
     }
 	
-	// Metodo per ottenere istanza della classe (Singleton)
+    // Metodo per ottenere istanza della classe (Singleton)
 	public static PrenotazioneDao getInstance() {
         if (instance == null) {
             instance = new PrenotazioneDao();
@@ -54,74 +53,55 @@ public class PrenotazioneDao {
     
 	// Metodo per aggiungere una nuova prenotazione al database
     public boolean aggiungiPrenotazione(Prenotazione prenotazione) {
-        if (prenotazione == null) {
-            throw new IllegalArgumentException("La prenotazione non può essere null");
-        }
-        
-        try {
-        	// Query SQL per inserire una nuova prenotazione
-            String insertQuery = """
+        if (prenotazione == null) throw new IllegalArgumentException("La prenotazione non può essere null");
+        String insertQuery = """
                 INSERT INTO prenotazioni 
                 (codice_prenotazione, nome_passeggero, cognome_passeggero, 
                  documento_passeggero, codice_volo, cancellata) 
                 VALUES (?, ?, ?, ?, ?, ?)
                 """;
-            
-            PreparedStatement ps = connection.prepareStatement(insertQuery);
+        try (PreparedStatement ps = connection.prepareStatement(insertQuery)) {
+            String[] nomeCognome = prenotazione.getPasseggero().getNomeCompleto().split(" ");
             ps.setString(1, prenotazione.getCodicePrenotazione());
-            ps.setString(2, prenotazione.getPasseggero().getNomeCompleto().split(" ")[0]);
-            ps.setString(3, prenotazione.getPasseggero().getNomeCompleto().split(" ")[1]);
+            ps.setString(2, nomeCognome[0]);
+            ps.setString(3, nomeCognome.length > 1 ? nomeCognome[1] : "");
             ps.setString(4, prenotazione.getPasseggero().getDocumento());
             ps.setString(5, prenotazione.getVolo().getCodice());
             ps.setBoolean(6, prenotazione.isCancellata());
-            
-            int rowsAffected = ps.executeUpdate();
-            ps.close();
-            
-            return rowsAffected > 0;
-            
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-        	// Stampa eventuali errori di SQL
             e.printStackTrace();
             return false;
         }
     }
-    
+        
+       
+    // Restituisce tutte le prenotazioni dal database.
     public List<Prenotazione> getTuttePrenotazioni() {
         List<Prenotazione> prenotazioni = new ArrayList<>();
-        
-        try {
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM prenotazioni");
-            
+        String query = "SELECT * FROM prenotazioni";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                String nomeCompleto = rs.getString("nome_passeggero") + " " + rs.getString("cognome_passeggero");
-                String documento = rs.getString("documento_passeggero");
-                String codiceVolo = rs.getString("codice_volo");
-                boolean cancellata = rs.getBoolean("cancellata");
-                
                 Passeggero passeggero = new Passeggero(
-                    rs.getString("nome_passeggero"), 
-                    rs.getString("cognome_passeggero"), 
-                    documento
+                    rs.getString("nome_passeggero"),
+                    rs.getString("cognome_passeggero"),
+                    rs.getString("documento_passeggero")
                 );
-                
-                Volo volo = voloDao.cercaPerCodice(codiceVolo);
+                Volo volo = voloDao.cercaPerCodice(rs.getString("codice_volo"));
                 if (volo != null) {
                     Prenotazione prenotazione = new Prenotazione(passeggero, volo);
-                    if (cancellata) {
+                    if (rs.getBoolean("cancellata")) {
                         prenotazione.cancella();
                     }
                     prenotazioni.add(prenotazione);
                 }
             }
-            
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
         return prenotazioni;
-    }
+    }        
 }
 
 

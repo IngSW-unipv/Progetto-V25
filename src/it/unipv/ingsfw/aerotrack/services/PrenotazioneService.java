@@ -5,6 +5,10 @@ import java.util.stream.Collectors;
 import it.unipv.ingsfw.aerotrack.dao.*;
 import it.unipv.ingsfw.aerotrack.models.*;
 
+/**
+ * Service per la logica di business delle prenotazioni.
+ * Valida i dati e delega la persistenza al DAO.
+ */
 public class PrenotazioneService {
 	
 	private PrenotazioneDao prenotazioneDao;
@@ -17,19 +21,20 @@ public class PrenotazioneService {
     
     /**
      * Creo una nuova prenotazione.
+     * @throws IllegalArgumentException se i dati non sono validi o il volo non esiste
      */
     public void creaPrenotazione(String nome, String cognome, String documento, String codiceVolo) {
         
         // Validazioni
-        if (nome == null || nome.trim().isEmpty()) {
+        if (nome == null || nome.isEmpty()) {
             throw new IllegalArgumentException("Nome non può essere vuoto");
         }
         
-        if (cognome == null || cognome.trim().isEmpty()) {
+        if (cognome == null || cognome.isEmpty()) {
             throw new IllegalArgumentException("Cognome non può essere vuoto");
         }
         
-        if (documento == null || documento.trim().isEmpty()) {
+        if (documento == null || documento.isEmpty()) {
             throw new IllegalArgumentException("Documento non può essere vuoto");
         }
         
@@ -59,7 +64,7 @@ public class PrenotazioneService {
      * Trova prenotazioni per documento passeggero.
      */
     public List<Prenotazione> trovaPrenotazioniPerDocumento(String documento) {
-    	 if (documento == null || documento.trim().isEmpty()) {
+    	 if (documento == null || documento.isEmpty()) {
              throw new IllegalArgumentException("Documento non può essere vuoto");
          }
     	 

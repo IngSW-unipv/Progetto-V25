@@ -14,6 +14,7 @@ public class AeroTrackFacade {
     private VoloService voloService;
     private PrenotazioneService prenotazioneService;
     
+    // Costruttore: inizializza tutti i serviz.
     public AeroTrackFacade() {
         this.aeroportoService = new AeroportoService();
         this.voloService = new VoloService();
@@ -21,43 +22,70 @@ public class AeroTrackFacade {
     }
     
     // ===== OPERAZIONI AEROPORTI =====
+    
+    /**
+     * Crea un nuovo aeroporto.
+     */
     public void creaAeroporto(String codice, String nome, double lat, double lon, int piste) {
         aeroportoService.aggiungiAeroporto(codice, nome, lat, lon, piste);
     }
     
+    /**
+     * Restituisce la lista di tutti gli aeroporti presenti nel sistema.
+     */
     public List<Aeroporto> getAeroporti() {
         return aeroportoService.getTuttiAeroporti();
     }
     
+    /**
+     * Cerca un aeroporto tramite codice IATA.
+     */
     public Aeroporto trovaAeroporto(String codice) {
         return aeroportoService.cercaAeroporto(codice);
     }
     
     // ===== OPERAZIONI VOLI =====
-    public void creaVolo(String codice, String codicePartenza, String codiceDestinazione, 
-                        double orario, double velocita)  {
+    
+    /**
+     * Crea un nuovo volo tra due aeroporti.
+     */
+    public void creaVolo(String codice, String codicePartenza, String codiceDestinazione, double orario, double velocita)  {
         voloService.creaVolo(codice, codicePartenza, codiceDestinazione, orario, velocita);
     }
     
+    /**
+     * Restituisce la lista di tutti i voli.
+     */
     public List<Volo> getVoli() {
         return voloService.getTuttiVoli();
     }
     
+    /**
+     * Cerca un volo tramite codice.
+     */
     public Volo trovaVolo(String codice) {
         return voloService.cercaVolo(codice);
     }
     
     // ===== OPERAZIONI PRENOTAZIONI =====
+    
+    /**
+     * Prenota un passeggero su un volo esistente.
+     */
     public void prenotaVolo(String nome, String cognome, String documento, String codiceVolo) {
         prenotazioneService.creaPrenotazione(nome, cognome, documento, codiceVolo);
     }
     
+    /**
+     * Restituisce la lista di tutte le prenotazioni.
+     */
     public List<Prenotazione> getPrenotazioni() {
         return prenotazioneService.getTuttePrenotazioni();
     }
     
     /**
      * Inizializza il sistema con dati di esempio.
+     * Utile per test o sviluppo.
      */
     public void inizializzaDatiEsempio() {
         try {
@@ -75,9 +103,9 @@ public class AeroTrackFacade {
             creaVolo("LH456", "MXP", "VCE", 11.15, 750);
             
             // Prenotazioni di esempio
-            prenotaVolo("Mario", "Rossi", "IT123456789", "AZ101");
-            prenotaVolo("Anna", "Verdi", "IT987654321", "AZ101");
-            prenotaVolo("Luigi", "Bianchi", "IT456789123", "FR123");
+            prenotaVolo("Chiara", "Viale", "IT123456789", "AZ101");
+            prenotaVolo("Davide", "Bozzola", "IT987654321", "AZ101");
+            prenotaVolo("Luigi", "Palmero", "IT456789123", "FR123");
             
         } catch (Exception e) {
             System.err.println("Errore nell'inizializzazione dati: " + e.getMessage());

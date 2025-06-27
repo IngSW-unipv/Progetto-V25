@@ -10,15 +10,21 @@ import it.unipv.ingsfw.aerotrack.models.Aeroporto;
  */
 public class CalcolaDistanza {
 	
-	private static final double R = 6371.0; // Raggio della Terra in km
+	private static final double R = 6371.0; // Raggio medio della Terra in km
 	
-	/** Formula di Haversine:
+	// Costruttore privato: la classe non deve essere istanziata
+    private CalcolaDistanza() {}
+    
+	/** 
+	 * Calcola la distanza in chilometri tra due aeroporti usando la formula di Haversine.
+     * 
+     * Formula:
      * a = sin²(Δlat/2) + cos lat1 ⋅ cos lat2 ⋅ sin²(Δlon/2)
      * c = 2 ⋅ atan2( √a, √(1−a) )
      * d = R ⋅ c
      * 
-     * @param aeroporto a1 Primo aeroporto (partenza)
-     * @param aeroporto a2 Secondo aeroporto (destinazione)
+     * @param a1 Primo aeroporto (partenza)
+     * @param a2 Secondo aeroporto (destinazione)
      * @return Distanza in chilometri tra i due aeroporti
      * @throws IllegalArgumentException se uno degli aeroporti è null
      */

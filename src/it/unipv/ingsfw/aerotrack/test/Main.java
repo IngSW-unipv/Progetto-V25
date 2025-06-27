@@ -1,66 +1,36 @@
 package it.unipv.ingsfw.aerotrack.test;
 
 import it.unipv.ingsfw.aerotrack.models.*;
-import java.util.*;
+import it.unipv.ingsfw.aerotrack.services.*;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        List<Prenotazione> prenotazioni = new ArrayList<>();
-        List<Passeggero> passeggeri = new ArrayList<>();
+        System.out.println("=== TEST DI BASE SU AEROPORTO E VOLO ===");
 
-        System.out.println("=== Sistema gestione Aeroporto ===");
-        while (true) {
-            System.out.println("\n1) Registra passeggero");
-            System.out.println("2) Fai prenotazione");
-            System.out.println("3) Cancella prenotazione");
-            System.out.println("4) Visualizza prenotazioni");
-            System.out.println("0) Esci");
-            System.out.print("Scelta: ");
-            int scelta = Integer.parseInt(sc.nextLine());
-            if (scelta == 1) {
-                System.out.print("Nome: ");
-                String nome = sc.nextLine();
-                System.out.print("Cognome: ");
-                String cognome = sc.nextLine();
-                System.out.print("Documento: ");
-                String doc = sc.nextLine();
-                Passeggero p = new Passeggero(nome, cognome, doc);
-                passeggeri.add(p);
-                System.out.println("Passeggero registrato con successo!");
-            } else if (scelta == 2) {
-                if (passeggeri.isEmpty()) {
-                    System.out.println("Prima registra almeno un passeggero!");
-                    continue;
-                }
-                System.out.println("Scegli passeggero (numero):");
-                for (int i = 0; i < passeggeri.size(); i++)
-                    System.out.println((i+1) + ") " + passeggeri.get(i));
-                int idx = Integer.parseInt(sc.nextLine()) - 1;
-                Passeggero p = passeggeri.get(idx);
-                Prenotazione pr = new Prenotazione(p, null); // semplificato, senza volo
-                prenotazioni.add(pr);
-                System.out.println("Prenotazione fatta: " + pr.getCodicePrenotazione());
-            } else if (scelta == 3) {
-                System.out.print("Inserisci codice prenotazione da cancellare: ");
-                String cod = sc.nextLine();
-                Optional<Prenotazione> opt = prenotazioni.stream().filter(pr -> pr.getCodicePrenotazione().equals(cod)).findFirst();
-                if (opt.isPresent()) {
-                    opt.get().cancella();
-                    System.out.println("Prenotazione cancellata!");
-                } else {
-                    System.out.println("Codice non trovato.");
-                }
-            } else if (scelta == 4) {
-                for (Prenotazione pr : prenotazioni)
-                    System.out.println(pr);
-            } else if (scelta == 0) {
-                System.out.println("Arrivederci!");
-                break;
-            } else {
-                System.out.println("Scelta non valida.");
-            }
+        AeroportoService aeroportoService = new AeroportoService();
+        VoloService voloService = new VoloService();
+
+        // Creo aeroporti di test
+        aeroportoService.aggiungiAeroporto("MXP", "Milano Malpensa", 45.63, 8.72, 2);
+        aeroportoService.aggiungiAeroporto("FCO", "Roma Fiumicino", 41.80, 12.24, 4);
+
+        System.out.println("Aeroporti registrati:");
+        for (Aeroporto a : aeroportoService.getTuttiAeroporti()) {
+            System.out.println(a);
         }
-        sc.close();
+
+        // Creo un volo tra MXP e FCO
+        voloService.creaVolo("AZ123", "MXP", "FCO", 12.45, 850);
+
+        System.out.println("\nVoli registrati:");
+        for (Volo v : voloService.getTuttiVoli()) {
+            System.out.println(v);
+        }
+
+        // Test ricerca
+        Volo v = voloService.cercaVolo("AZ123");
+        System.out.println("\nDettagli volo trovato: " + v);
     }
 }
+
+//cosa ne pensi??
