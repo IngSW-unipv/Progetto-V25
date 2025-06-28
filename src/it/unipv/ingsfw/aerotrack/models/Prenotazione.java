@@ -84,4 +84,18 @@ public class Prenotazione {
         String stato = cancellata ? "CANCELLATA" : "ATTIVA";
         return String.format("Prenotazione %s - %s [%s]", codicePrenotazione, passeggero.getNomeCompleto(), stato);
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Prenotazione that = (Prenotazione) o;
+        return codicePrenotazione.equals(that.codicePrenotazione);
+    }
+
+    @Override
+    public int hashCode() {
+        return codicePrenotazione.hashCode();
+    }
+    
 }

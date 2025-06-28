@@ -85,7 +85,6 @@ public class AeroTrackFacade {
     
     /**
      * Inizializza il sistema con dati di esempio.
-     * Utile per test o sviluppo.
      */
     public void inizializzaDatiEsempio() {
         try {

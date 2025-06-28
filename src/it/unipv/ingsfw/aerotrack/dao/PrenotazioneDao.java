@@ -21,21 +21,21 @@ public class PrenotazioneDao {
             voloDao = VoloDao.getInstance();
             
             // Crea la tabella "prenotazioni" se non esiste già
-            Statement stmt = connection.createStatement();
-            String createTableQuery = """
-                CREATE TABLE IF NOT EXISTS prenotazioni (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    codice_prenotazione TEXT UNIQUE NOT NULL,
-                    nome_passeggero TEXT NOT NULL,
-                    cognome_passeggero TEXT NOT NULL,
-                    documento_passeggero TEXT NOT NULL,
-                    codice_volo TEXT NOT NULL,
-                    cancellata BOOLEAN DEFAULT FALSE,
-                    FOREIGN KEY(codice_volo) REFERENCES voli(codice)
-                )
-                """;
-            stmt.executeUpdate(createTableQuery);
-            
+            try (Statement stmt = connection.createStatement()) {
+                String createTableQuery = """
+                    CREATE TABLE IF NOT EXISTS prenotazioni (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        codice_prenotazione TEXT UNIQUE NOT NULL,
+                        nome_passeggero TEXT NOT NULL,
+                        cognome_passeggero TEXT NOT NULL,
+                        documento_passeggero TEXT NOT NULL,
+                        codice_volo TEXT NOT NULL,
+                        cancellata BOOLEAN DEFAULT FALSE,
+                        FOREIGN KEY(codice_volo) REFERENCES voli(codice)
+                    )
+                    """;
+                stmt.executeUpdate(createTableQuery);
+            }
         } catch (SQLException e) {
         	// Se c'è un errore nella creazione della tabella, lo stampa
             e.printStackTrace();
@@ -44,7 +44,7 @@ public class PrenotazioneDao {
     }
 	
     // Metodo per ottenere istanza della classe (Singleton)
-	public static PrenotazioneDao getInstance() {
+	public static synchronized PrenotazioneDao getInstance() {
         if (instance == null) {
             instance = new PrenotazioneDao();
         }
@@ -76,7 +76,7 @@ public class PrenotazioneDao {
     }
         
        
-    // Restituisce tutte le prenotazioni dal database.
+    // Restituisce tutte le prenotazioni dal database (sia attive che cancellate).
     public List<Prenotazione> getTuttePrenotazioni() {
         List<Prenotazione> prenotazioni = new ArrayList<>();
         String query = "SELECT * FROM prenotazioni";
@@ -101,7 +101,17 @@ public class PrenotazioneDao {
             e.printStackTrace();
         }
         return prenotazioni;
-    }        
+    }  
+    
+    public void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 

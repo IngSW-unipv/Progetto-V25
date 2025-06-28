@@ -7,9 +7,9 @@ package it.unipv.ingsfw.aerotrack.models;
 public class Passeggero {
 	
 	// Attributi
-	private String nome;                 // Nome del passeggero
-	private String cognome;              // Cognome del passeggero
-	private String documento;            // Numero del documento di identità (passaporto, carta d'identità, etc.)
+	private final String nome;                 // Nome del passeggero
+	private final String cognome;              // Cognome del passeggero
+	private final String documento;            // Numero del documento di identità (passaporto, carta d'identità, etc.)
 	
 	
 	

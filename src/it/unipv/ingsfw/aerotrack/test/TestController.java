@@ -9,13 +9,13 @@ public class TestController {
         AeroTrackController controller = new AeroTrackController();
 
         // Aggiungi aeroporti e voli tramite controller
-        controller.aggiungiAeroporto("VCE", "Venezia Marco Polo", 45.51, 12.35, 2);
-        controller.aggiungiAeroporto("NAP", "Napoli Capodichino", 40.88, 14.29, 1);
+        controller.creaAeroporto("VCE", "Venezia Marco Polo", 45.51, 12.35, 2);
+        controller.creaAeroporto("NAP", "Napoli Capodichino", 40.88, 14.29, 1);
         controller.creaVolo("IT500", "VCE", "NAP", 15.10, 800);
 
         // Prenota due passeggeri su IT500
-        controller.prenotaPasseggero("Chiara", "Viale", "DOC123", "IT500");
-        controller.prenotaPasseggero("Marco", "Neri", "DOC321", "IT500");
+        controller.creaPrenotazione("Chiara", "Viale", "DOC123", "IT500");
+        controller.creaPrenotazione("Marco", "Neri", "DOC321", "IT500");
 
         // Visualizza prenotazioni attive
         System.out.println("\nPrenotazioni attive:");

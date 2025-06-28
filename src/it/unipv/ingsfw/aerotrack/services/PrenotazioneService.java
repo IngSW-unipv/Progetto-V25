@@ -50,7 +50,12 @@ public class PrenotazioneService {
         
         // Aggiunge la prenotazione al volo
         volo.aggiungiPrenotazione(prenotazione);
+        
+        // Persiste nel database
+        boolean ok = prenotazioneDao.aggiungiPrenotazione(prenotazione);
+        if (!ok) throw new RuntimeException("Errore nel salvataggio della prenotazione su database");
     }
+    
     
     /**
      * Restituisce tutte le prenotazioni.

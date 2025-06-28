@@ -9,18 +9,10 @@ import java.util.List;
  * Classe che rappresenta un aeroporto nel sistema di gestione voli Aerotrack.
  * Un aeroporto è caratterizzato da un codice identificativo, coordinate geografiche
  * e un numero di piste disponibili per i voli.
- * 
- * La classe implementa funzionalità per:
- * - Gestione delle piste occupate
- * - Calcolo della distanza tra aeroporti usando la formula di Haversine
- * - Controllo della disponibilità delle piste
  */
-
-
 public class Aeroporto {  
 	
 	// Attributi
-	
 	private final String codice; // Codice IATA, maiuscolo (es: MXP)
     private final String nome;
     private final double latitudine;
@@ -154,6 +146,24 @@ public class Aeroporto {
        return new ArrayList<>(voliInArrivo);
    }
    
+   /**
+    * Aggiunge un volo alla lista dei voli in partenza da questo aeroporto.
+    */
+   public void aggiungiVoloInPartenza(Volo v) {
+       if (v != null && !voliInPartenza.contains(v)) {
+           voliInPartenza.add(v);
+       }
+   }
+
+   /**
+    * Aggiunge un volo alla lista dei voli in arrivo a questo aeroporto.
+    */
+   public void aggiungiVoloInArrivo(Volo v) {
+       if (v != null && !voliInArrivo.contains(v)) {
+           voliInArrivo.add(v);
+       }
+   }
+   
    
    // METODI PER GESTIONE PISTE
    
@@ -201,8 +211,25 @@ public class Aeroporto {
     */
    @Override
    public String toString() {
-       return String.format("Aeroporto{codice='%s', nome='%s', coordinate=(%.6f, %.6f), piste=%d, pisteLibere=%d}",
-               codice, nome, latitudine, longitudine, numeroPiste);
+	   int libere = 0;
+	   for (Volo v : pistaOccupata) if (v == null) libere++;
+	   return String.format("Aeroporto{codice='%s', nome='%s', coordinate=(%.6f, %.6f), piste=%d, pisteLibere=%d}",
+	           codice, nome, latitudine, longitudine, numeroPiste, libere);
+	}
+   
+   @Override
+   public boolean equals(Object o) {
+       if (this == o) return true;
+       if (o == null || getClass() != o.getClass()) return false;
+       Aeroporto that = (Aeroporto) o;
+       return codice.equals(that.codice);
+   }
+
+   @Override
+   public int hashCode() {
+       return codice.hashCode();
    }
 
 }
+
+//Aggiungieresti un metodo per liberare una pista (per liberare una pista quando un volo parte o atterra)??
