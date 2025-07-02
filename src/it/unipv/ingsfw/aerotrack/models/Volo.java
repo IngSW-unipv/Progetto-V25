@@ -20,7 +20,8 @@ public class Volo {
         IN_VOLO,        // Volo in corso
         ATTERRATO,      // Volo arrivato a destinazione
         CANCELLATO,     // Volo cancellato
-        RITARDATO       // Volo in ritardo
+        RITARDATO,      // Volo in ritardo
+        IN_ATTESA       // Tutte le piste sono occupate
     }
     
    // Attributi  
@@ -55,7 +56,15 @@ public class Volo {
 		this.velocita = velocita;
 		this.prenotazioni = new ArrayList<>();
         this.ritardo = 0;                        // Inizializzazione ritardo a zero
-        this.stato = StatoVolo.PROGRAMMATO;
+        this.pistaAssegnata = -1;
+        
+     // Aggiorna le liste degli aeroporti
+        if (partenza != null) {
+            partenza.aggiungiVoloInPartenza(this);
+        }
+        if (destinazione != null) {
+            destinazione.aggiungiVoloInArrivo(this);
+        }
         
         // Tentativo di assegnazione pista nell'aeroporto di partenza
         boolean pistaAssegnata = false;
@@ -67,6 +76,7 @@ public class Volo {
                 partenza.occupaPista(i, this);
                 this.pistaAssegnata = i;
                 pistaAssegnata = true;
+                this.stato = StatoVolo.PROGRAMMATO;
                 break; // Esce dal loop una volta assegnata la pista
             }
         }
@@ -74,6 +84,7 @@ public class Volo {
         // Se non ha trovato piste libere, calcola il ritardo
         if(!pistaAssegnata) {
             this.ritardo = calcolaRitardo();
+            this.stato = StatoVolo.IN_ATTESA; 
         }
 	}
 	
@@ -200,31 +211,25 @@ public class Volo {
 	
     /**
      * Calcola il ritardo basandosi sui voli che occupano le piste.
-     * Trova il volo con orario più vicino e calcola la differenza.
      * 
      * @return Ritardo calcolato in ore
      */
     public double calcolaRitardo() {
-    	double minRitardo=0;
-    	 // Scorre tutte le piste dell'aeroporto di partenza
-    	for(int i=0; i<partenza.getNumeroPiste(); i++) {
-    		 // Ottiene il volo che occupa la pista i
-            Volo voloOccupante = partenza.getPistaOccupata()[i];
-            
-            // Se la pista è occupata
-            if(voloOccupante != null) {
-                // Calcola la differenza di orario
-                double differenza = orarioPartenza - voloOccupante.getOrarioPartenza();
-                
-                // Mantiene il ritardo minimo (più vicino nel tempo)
-                if(differenza < minRitardo) {
-                    minRitardo = differenza;
-                }
-            }     
+        double orarioRichiesto = this.orarioPartenza;
+        double minRitardo = 0;
+
+        // Cerca il primo orario disponibile su ogni pista
+        for (int i = 0; i < partenza.getNumeroPiste(); i++) {
+            Volo occupante = partenza.getPistaOccupata()[i];
+            double fineOccupazione = (occupante == null) ? orarioRichiesto : occupante.getOrarioPartenza() + 0.5;
+            double ritardo = Math.max(0, fineOccupazione - orarioRichiesto);
+
+            // Prendi il minimo ritardo tra tutte le piste
+            if (i == 0 || ritardo < minRitardo) {
+                minRitardo = ritardo;
+            }
         }
-    	
-    	// Restituisce il valore assoluto del ritardo minimo
-        return Math.abs(minRitardo);
+        return minRitardo;
     }
     
     /**
@@ -247,4 +252,20 @@ public class Volo {
     public boolean isInRitardo() {
         return ritardo > 0;
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Volo that = (Volo) o;
+        return codice.equals(that.codice);
+    }
+
+    @Override
+    public int hashCode() {
+        return codice.hashCode();
+    }
 }
+
+
+// forse meglio calcolare ritardo in services?? creando una nuova classe services?
