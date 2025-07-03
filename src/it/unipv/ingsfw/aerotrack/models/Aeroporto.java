@@ -7,8 +7,8 @@ import java.util.Objects;
 
 
 /**
- * Rappresenta un aeroporto con codice IATA, nome, coordinate e piste.
- * Gestisce voli in partenza/arrivo e stato delle piste.
+ * Rappresenta un aeroporto con codice IATA, nome, coordinate geografiche e numero di piste.
+ * Gestisce i voli in partenza e in arrivo, e lo stato corrente delle piste.
  */
 public class Aeroporto {  
 	
@@ -27,7 +27,7 @@ public class Aeroporto {
      * Costruttore per creare un nuovo aeroporto.
      * 
      * @param codice       Codice IATA (3 lettere)
-     * @param nome         Nome completo
+     * @param nome         Nome aeroporto
      * @param latitudine   Latitudine [-90,+90]
      * @param longitudine  Longitudine [-180,+180]
      * @param numeroPiste  Numero piste (>0)
@@ -72,7 +72,7 @@ public class Aeroporto {
 	/**
      * Restituisce il codice IATA dell'aeroporto.
      * 
-     * @return Codice dell'aeroporto (es. "MXP")
+     * @return Codice dell'aeroporto 
      */
 	public String getCodice() {
 		return codice;

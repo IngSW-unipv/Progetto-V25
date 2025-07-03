@@ -20,13 +20,7 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null); // Centra la finestra sullo schermo
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Aeroporti", new AeroportoPanel());
-        // tabbedPane.addTab("Voli", new VoloPanel()); // Da implementare analogamente
-        // tabbedPane.addTab("Prenotazioni", new PrenotazionePanel()); // Da implementare analogamente
-
-        add(tabbedPane, BorderLayout.CENTER);
-
-        setVisible(true);
+        
         // Tab di Benvenuto
         JPanel welcomePanel = new JPanel(new BorderLayout());
         JLabel label = new JLabel("Benvenuto nella demo del progetto!", SwingConstants.CENTER);
@@ -34,9 +28,10 @@ public class MainFrame extends JFrame {
         welcomePanel.add(label, BorderLayout.CENTER);
         tabbedPane.addTab("Benvenuto", welcomePanel);
 
+        // Tab CRUD
         tabbedPane.addTab("Aeroporti", new AeroportoPanel());
-        // tabbedPane.addTab("Voli", new VoloPanel());
-        // tabbedPane.addTab("Prenotazioni", new PrenotazionePanel());
+        tabbedPane.addTab("Voli", new VoloPanel());
+        tabbedPane.addTab("Prenotazioni", new PrenotazionePanel());
 
         setContentPane(tabbedPane);
         setVisible(true);
