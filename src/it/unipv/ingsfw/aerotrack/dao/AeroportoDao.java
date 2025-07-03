@@ -15,37 +15,6 @@ public class AeroportoDao {
 	private static AeroportoDao instance;     // Istanza singleton della classe
 	private Connection connection;            // Connessione al database SQLite
 	
-	
-	// Costruttore per Singleton
-	private AeroportoDao() {
-		try {
-			connection = DriverManager.getConnection("jdbc:sqlite:aeroporto.db");
-			Statement stmt = connection.createStatement();
-			
-			// Crea la tabella se non esiste già
-            String createTableQuery = """
-                CREATE TABLE IF NOT EXISTS aeroporti (
-                    codice TEXT PRIMARY KEY,
-                    nome TEXT NOT NULL,
-                    latitudine REAL NOT NULL,
-                    longitudine REAL NOT NULL,
-                    numeroPiste INTEGER NOT NULL CHECK(numeroPiste > 0)
-                )
-                """;
-            
-            stmt.executeUpdate(createTableQuery);
-  
-            // Messaggio di conferma per il debug
-            System.out.println("Database aeroporti inizializzato correttamente");
-            
-        } catch (SQLException e) {
-            // In caso di errore durante l'inizializzazione
-            System.err.println("Errore durante l'inizializzazione del database aeroporti");
-            e.printStackTrace();
-            throw new RuntimeException("Impossibile inizializzare il database aeroporti", e);
-        }
-    }
-	
 	/**
      * Restituisce l'istanza singleton della classe AeroportoDao.
      * Se l'istanza non esiste ancora, la crea.
@@ -61,7 +30,6 @@ public class AeroportoDao {
 	
 	 
      // Metodo aggiungiAeroporto(): aggiunge o aggiorna un aeroporto (INSERT OR REPLACE).
-    
 	public boolean aggiungiAeroporto(Aeroporto a) {
         if (a == null) throw new IllegalArgumentException("L'aeroporto non può essere null");
         String insertQuery = """

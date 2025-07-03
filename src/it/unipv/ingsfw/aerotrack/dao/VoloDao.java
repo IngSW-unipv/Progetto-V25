@@ -16,40 +16,6 @@ public class VoloDao {
 	private Connection connection;         // Connessione al database SQLite
 	private AeroportoDao aeroportoDao;     // Istanza del DAO degli aeroporti per recuperare i dati degli aeroporti
 	
-	
-	// Costruttore per implementare il pattern Singleton.
-	private VoloDao() {
-		try {
-			 connection = DriverManager.getConnection("jdbc:sqlite:aeroporti.db");
-			 aeroportoDao = AeroportoDao.getInstance();
-	         
-			 Statement stmt = connection.createStatement();    // Crea la tabella voli se non esiste già
-			 
-			 // Query SQL per creare la tabella con foreign key verso aeroporti
-	         String createTableQuery = """
-	             CREATE TABLE IF NOT EXISTS voli (
-	                 codice TEXT PRIMARY KEY,
-	                 partenza TEXT NOT NULL,
-	                 destinazione TEXT NOT NULL,
-	                 orario_partenza REAL DEFAULT 0.0,
-	                 velocita REAL DEFAULT 800.0,
-	                 FOREIGN KEY(partenza) REFERENCES aeroporti(codice),
-	                 FOREIGN KEY(destinazione) REFERENCES aeroporti(codice)
-	                )
-	                """;
-	         stmt.executeUpdate(createTableQuery);
-	            
-	            // Chiude lo statement dopo l'uso
-	            stmt.close();
-	            
-	    } catch (SQLException e) {
-	    	 // In caso di errore, stampa lo stack trace e lancia eccezione runtime
-	         e.printStackTrace();      // Stampa l'errore nella console
-	         throw new RuntimeException("Errore durante l'inizializzazione del database voli", e);
-	    }
-	}
-	
-	
 	/**
      * Restituisce l'istanza singleton della classe VoloDao.
      * Se l'istanza non esiste ancora, la crea.

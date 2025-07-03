@@ -14,35 +14,6 @@ public class PrenotazioneDao {
 	private Connection connection;
 	private VoloDao voloDao;
 	
-	// Costruttore
-	private PrenotazioneDao() {
-		try {
-			connection = DriverManager.getConnection("jdbc:sqlite:aeroporti.db");
-            voloDao = VoloDao.getInstance();
-            
-            // Crea la tabella "prenotazioni" se non esiste già
-            Statement stmt = connection.createStatement();
-            String createTableQuery = """
-                CREATE TABLE IF NOT EXISTS prenotazioni (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    codice_prenotazione TEXT UNIQUE NOT NULL,
-                    nome_passeggero TEXT NOT NULL,
-                    cognome_passeggero TEXT NOT NULL,
-                    documento_passeggero TEXT NOT NULL,
-                    codice_volo TEXT NOT NULL,
-                    cancellata BOOLEAN DEFAULT FALSE,
-                    FOREIGN KEY(codice_volo) REFERENCES voli(codice)
-                )
-                """;
-            stmt.executeUpdate(createTableQuery);
-            
-        } catch (SQLException e) {
-        	// Se c'è un errore nella creazione della tabella, lo stampa
-            e.printStackTrace();
-            throw new RuntimeException("Errore inizializzazione database prenotazioni", e);
-        }
-    }
-	
     // Metodo per ottenere istanza della classe (Singleton)
 	public static PrenotazioneDao getInstance() {
         if (instance == null) {
