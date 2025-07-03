@@ -3,13 +3,17 @@ package it.unipv.ingsfw.aerotrack.test;
 import it.unipv.ingsfw.aerotrack.models.*;
 import it.unipv.ingsfw.aerotrack.services.*;
 
+/**
+ * Test manuale: crea aeroporti e voli, stampa su console lo stato del sistema.
+ * Utile per debug e verifica veloce da linea di comando.
+ */
 public class Main {
     public static void main(String[] args) {
         System.out.println("=== TEST DI BASE SU AEROPORTO E VOLO ===");
 
-        AeroportoService aeroportoService = new AeroportoService();
-        VoloService voloService = new VoloService();
-
+        AeroportoService aeroportoService = AeroportoService.getInstance();
+        VoloService voloService = VoloService.getInstance();
+        
         // Creo aeroporti di test
         aeroportoService.aggiungiAeroporto("MXP", "Milano Malpensa", 45.63, 8.72, 2);
         aeroportoService.aggiungiAeroporto("FCO", "Roma Fiumicino", 41.80, 12.24, 4);

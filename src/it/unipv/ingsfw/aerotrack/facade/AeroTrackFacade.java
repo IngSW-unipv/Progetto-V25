@@ -10,15 +10,15 @@ import it.unipv.ingsfw.aerotrack.models.*;
  */
 public class AeroTrackFacade {
     
-    private AeroportoService aeroportoService;
-    private VoloService voloService;
-    private PrenotazioneService prenotazioneService;
+    private final AeroportoService aeroportoService;
+    private final VoloService voloService;
+    private final PrenotazioneService prenotazioneService;
     
     // Costruttore: inizializza tutti i serviz.
     public AeroTrackFacade() {
-        this.aeroportoService = new AeroportoService();
-        this.voloService = new VoloService();
-        this.prenotazioneService = new PrenotazioneService();
+        this.aeroportoService = AeroportoService.getInstance();
+        this.voloService = VoloService.getInstance();
+        this.prenotazioneService = PrenotazioneService.getInstance();
     }
     
     // ===== OPERAZIONI AEROPORTI =====
@@ -83,9 +83,7 @@ public class AeroTrackFacade {
         return prenotazioneService.getTuttePrenotazioni();
     }
     
-    /**
-     * Inizializza il sistema con dati di esempio.
-     */
+    // ===== INIZIALIZZAZIONE DATI ESEMPIO =====
     public void inizializzaDatiEsempio() {
         try {
             // Aeroporti principali italiani

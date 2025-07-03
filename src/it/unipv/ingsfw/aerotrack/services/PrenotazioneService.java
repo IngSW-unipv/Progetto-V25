@@ -6,56 +6,51 @@ import it.unipv.ingsfw.aerotrack.dao.*;
 import it.unipv.ingsfw.aerotrack.models.*;
 
 /**
- * Service per la logica di business delle prenotazioni.
+ * Service Singleton per la logica di business delle prenotazioni.
  * Valida i dati e delega la persistenza al DAO.
  */
 public class PrenotazioneService {
 	
-	private PrenotazioneDao prenotazioneDao;
-    private VoloDao voloDao;
+	private static PrenotazioneService instance;
+	private final PrenotazioneDao prenotazioneDao;
+    private final VoloDao voloDao;
     
-    public PrenotazioneService() {
+    private PrenotazioneService() {
         this.prenotazioneDao = PrenotazioneDao.getInstance();
         this.voloDao = VoloDao.getInstance();
     }
+
+    public static PrenotazioneService getInstance() {
+        if (instance == null) instance = new PrenotazioneService();
+        return instance;
+    }
     
     /**
-     * Creo una nuova prenotazione.
+     * Crea una nuova prenotazione.
+     * 
      * @throws IllegalArgumentException se i dati non sono validi o il volo non esiste
      */
     public void creaPrenotazione(String nome, String cognome, String documento, String codiceVolo) {
-        
         // Validazioni
         if (nome == null || nome.isEmpty()) {
             throw new IllegalArgumentException("Nome non può essere vuoto");
         }
-        
         if (cognome == null || cognome.isEmpty()) {
             throw new IllegalArgumentException("Cognome non può essere vuoto");
         }
-        
         if (documento == null || documento.isEmpty()) {
             throw new IllegalArgumentException("Documento non può essere vuoto");
         }
-        
-        // Trova il volo specificato
         Volo volo = voloDao.cercaPerCodice(codiceVolo);
         if (volo == null) {
             throw new IllegalArgumentException("Volo non trovato con codice: " + codiceVolo);
         }
-
-        // Crea passeggero e prenotazione
         Passeggero passeggero = new Passeggero(nome, cognome, documento);
         Prenotazione prenotazione = new Prenotazione(passeggero, volo);
-        
-        // Aggiunge la prenotazione al volo
-        volo.aggiungiPrenotazione(prenotazione);
-        
-        // Persiste nel database
+        volo.aggiungiPrenotazione(prenotazione); 
         boolean ok = prenotazioneDao.aggiungiPrenotazione(prenotazione);
         if (!ok) throw new RuntimeException("Errore nel salvataggio della prenotazione su database");
     }
-    
     
     /**
      * Restituisce tutte le prenotazioni.
@@ -64,18 +59,16 @@ public class PrenotazioneService {
         return prenotazioneDao.getTuttePrenotazioni();
     }
     
-    
     /**
      * Trova prenotazioni per documento passeggero.
      */
     public List<Prenotazione> trovaPrenotazioniPerDocumento(String documento) {
-    	 if (documento == null || documento.isEmpty()) {
-             throw new IllegalArgumentException("Documento non può essere vuoto");
-         }
-    	 
-    	 return prenotazioneDao.getTuttePrenotazioni()
-                .stream()
-                .filter(p -> p.getPasseggero().getDocumento().equalsIgnoreCase(documento))
-                .collect(Collectors.toList());
+        if (documento == null || documento.isEmpty()) {
+            throw new IllegalArgumentException("Documento non può essere vuoto");
+        }
+        return prenotazioneDao.getTuttePrenotazioni()
+               .stream()
+               .filter(p -> p.getPasseggero().getDocumento().equalsIgnoreCase(documento))
+               .collect(Collectors.toList());
     }
 }

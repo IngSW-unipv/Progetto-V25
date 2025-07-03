@@ -3,14 +3,18 @@ package it.unipv.ingsfw.aerotrack.test;
 import it.unipv.ingsfw.aerotrack.services.*;
 import it.unipv.ingsfw.aerotrack.models.*;
 
+/**
+ * Test manuale: verifica la creazione di aeroporti, voli e prenotazioni.
+ * Permette di vedere l'output da console e verificare la ricerca delle prenotazioni.
+ */
 public class Tester {
 
 	public static void main(String[] args) {
         System.out.println("=== TEST COMPLETO: PRENOTAZIONI ===");
 
-        AeroportoService aeroportoService = new AeroportoService();
-        VoloService voloService = new VoloService();
-        PrenotazioneService prenotazioneService = new PrenotazioneService();
+        AeroportoService aeroportoService = AeroportoService.getInstance();
+        VoloService voloService = VoloService.getInstance();
+        PrenotazioneService prenotazioneService = PrenotazioneService.getInstance();
 
         // Inizializza aeroporti e voli
         aeroportoService.aggiungiAeroporto("LIN", "Milano Linate", 45.45, 9.27, 2);

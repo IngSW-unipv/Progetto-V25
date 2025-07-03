@@ -3,22 +3,22 @@ package it.unipv.ingsfw.aerotrack.models;
 import it.unipv.ingsfw.aerotrack.utils.CalcolaDistanza;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
- * Classe che rappresenta un aeroporto nel sistema di gestione voli Aerotrack.
- * Un aeroporto è caratterizzato da un codice identificativo, coordinate geografiche
- * e un numero di piste disponibili per i voli.
+ * Rappresenta un aeroporto con codice IATA, nome, coordinate e piste.
+ * Gestisce voli in partenza/arrivo e stato delle piste.
  */
 public class Aeroporto {  
 	
 	// Attributi
-	private final String codice; // Codice IATA, maiuscolo (es: MXP)
+	private final String codice;
     private final String nome;
     private final double latitudine;
     private final double longitudine;
     private final int numeroPiste;
-    private final Volo[] pistaOccupata; // Stato di occupazione delle piste
+    private final Volo[] piste; 
     private final List<Volo> voliInPartenza;
     private final List<Volo> voliInArrivo;
     
@@ -26,35 +26,31 @@ public class Aeroporto {
     /**
      * Costruttore per creare un nuovo aeroporto.
      * 
-     * @param codice Codice IATA dell'aeroporto (deve essere di 3 caratteri)
-     * @param nome Nome completo dell'aeroporto
-     * @param latitudine Latitudine in gradi decimali (range: -90 a +90)
-     * @param longitudine Longitudine in gradi decimali (range: -180 a +180)
-     * @param numeroPiste Numero di piste disponibili (deve essere > 0)
-     * @throws IllegalArgumentException se i parametri non sono validi
+     * @param codice       Codice IATA (3 lettere)
+     * @param nome         Nome completo
+     * @param latitudine   Latitudine [-90,+90]
+     * @param longitudine  Longitudine [-180,+180]
+     * @param numeroPiste  Numero piste (>0)
+     * @throws IllegalArgumentException se parametri non validi
      */
     
 	public Aeroporto (String codice, String nome, double latitudine, double longitudine, int numeroPiste) {
 		
 		// Validazione dei parametri di input
         if (codice == null || codice.length() != 3) {
-        	/**Il codice IATA (International Air Transport Association) è un codice di tre lettere assegnato a ogni aeroporto nel mondo. 
-        	 * Serve per identificare in modo univoco gli aeroporti nei biglietti aerei, nei sistemi di prenotazione, 
-        	 * nelle etichette dei bagagli e nei pannelli informativi.
-        	 */
-            throw new IllegalArgumentException("Il codice aeroporto deve essere di 3 caratteri");  
+        	throw new IllegalArgumentException("Codice IATA invalido");  
         }
         
         if (nome == null || nome.isEmpty()) {
-            throw new IllegalArgumentException("Il nome dell'aeroporto non può essere vuoto");
+            throw new IllegalArgumentException("Nome aeroporto vuoto");
         }
         
         if (latitudine < -90 || latitudine > 90) {
-            throw new IllegalArgumentException("La latitudine deve essere tra -90 e +90 gradi");
+            throw new IllegalArgumentException("Latitudine fuori range");
         }
         
         if (longitudine < -180 || longitudine > 180) {
-            throw new IllegalArgumentException("La longitudine deve essere tra -180 e +180 gradi");
+            throw new IllegalArgumentException("Longitudine fuori range");
         }
         
         if (numeroPiste <= 0) {
@@ -67,7 +63,7 @@ public class Aeroporto {
 		this.latitudine = latitudine;
 		this.longitudine = longitudine;
 		this.numeroPiste = numeroPiste;
-		this.pistaOccupata = new Volo[numeroPiste]; 
+		this.piste = new Volo[numeroPiste]; 
         this.voliInPartenza = new ArrayList<>();     
         this.voliInArrivo = new ArrayList<>();
 	}
@@ -121,12 +117,11 @@ public class Aeroporto {
 	/**
      * Restituisce l'array che rappresenta lo stato delle piste.
      * 
-     * @return Array delle piste occupate
+     * @return Stato piste (array di voli, null se libera)
      */
-	public Volo[] getPistaOccupata() {
-		return pistaOccupata;
+	public Volo[] getPiste() {
+		return piste.clone();
 	}
-	
 	
 	/**
     * Restituisce la lista dei voli in partenza da questo aeroporto.
@@ -146,9 +141,25 @@ public class Aeroporto {
        return new ArrayList<>(voliInArrivo);
    }
    
-   /**
-    * Aggiunge un volo alla lista dei voli in partenza da questo aeroporto.
-    */
+   /** Libera la pista specificata */
+   public void liberaPista(int indicePista) {
+       if (indicePista < 0 || indicePista >= numeroPiste) 
+    	   throw new IllegalArgumentException("Indice pista non valido");
+       piste[indicePista] = null;
+   }
+
+   /** Occupa una pista con il volo dato. */
+   public boolean occupaPista(int indicePista, Volo v) {
+       if (indicePista < 0 || indicePista >= numeroPiste) 
+    	   throw new IllegalArgumentException("Indice pista non valido");
+       if (v == null) throw new IllegalArgumentException("Volo null");
+       if (piste[indicePista] != null) 
+    	   throw new IllegalStateException("Pista già occupata");
+       piste[indicePista] = v;
+       return true;
+   }
+   
+   /** Aggiunge un volo in partenza */
    public void aggiungiVoloInPartenza(Volo v) {
        if (v != null && !voliInPartenza.contains(v)) {
            voliInPartenza.add(v);
@@ -156,7 +167,7 @@ public class Aeroporto {
    }
 
    /**
-    * Aggiunge un volo alla lista dei voli in arrivo a questo aeroporto.
+    * Aggiunge un volo in arrivo.
     */
    public void aggiungiVoloInArrivo(Volo v) {
        if (v != null && !voliInArrivo.contains(v)) {
@@ -165,38 +176,10 @@ public class Aeroporto {
    }
    
    
-   // METODI PER GESTIONE PISTE
-   
-   /**
-    * Occupa una pista con un volo.
-    */
-   public boolean occupaPista(int indicePista, Volo volo) {
-       // Validazione dell'indice della pista
-       if (indicePista < 0 || indicePista >= numeroPiste) {
-           throw new IllegalArgumentException("Indice pista non valido: " + indicePista);
-       }
-       
-       // Verifica che la pista sia libera
-       if (pistaOccupata[indicePista] != null) {
-           throw new IllegalStateException("La pista " + indicePista + " è già occupata");
-       }
-       
-       // Verifica che il volo non sia null
-       if (volo == null) {
-           throw new IllegalArgumentException("Il volo non può essere null");
-       }
-       
-       // Occupa la pista
-       pistaOccupata[indicePista] = volo;
-       return true;
-   }
-   
-    
    // Metodi Utils
    
    /**
-    * Calcola la distanza tra questo aeroporto e un altro
-    * utilizzando la formula di Haversine.
+    * Calcola la distanza in km da un altro aeroporto
     */
    public double calcolaDistanza(Aeroporto altroAeroporto) {
        if (altroAeroporto == null) {
@@ -212,24 +195,24 @@ public class Aeroporto {
    @Override
    public String toString() {
 	   int libere = 0;
-	   for (Volo v : pistaOccupata) if (v == null) libere++;
-	   return String.format("Aeroporto{codice='%s', nome='%s', coordinate=(%.6f, %.6f), piste=%d, pisteLibere=%d}",
+	   for (Volo v : piste) if (v == null) libere++;
+	   return String.format("Aeroporto{codice='%s', nome='%s', coordinate=(%.4f, %.4f), piste=%d, pisteLibere=%d}",
 	           codice, nome, latitudine, longitudine, numeroPiste, libere);
 	}
    
    @Override
    public boolean equals(Object o) {
-       if (this == o) return true;
-       if (o == null || getClass() != o.getClass()) return false;
-       Aeroporto that = (Aeroporto) o;
-       return codice.equals(that.codice);
+       if (this == o) 
+    	   return true;
+       if (!(o instanceof Aeroporto a)) 
+    	   return false;
+       return codice.equals(a.codice);
    }
 
    @Override
    public int hashCode() {
-       return codice.hashCode();
+       return Objects.hash(codice);
    }
 
 }
 
-//Aggiungieresti un metodo per liberare una pista (per liberare una pista quando un volo parte o atterra)??

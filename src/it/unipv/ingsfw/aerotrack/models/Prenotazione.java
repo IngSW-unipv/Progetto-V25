@@ -1,5 +1,7 @@
 package it.unipv.ingsfw.aerotrack.models;
 
+import java.util.Objects;
+
 /**
  * Classe che rappresenta una prenotazione di un passeggero per un volo.
  * Gestisce le informazioni del passeggero e lo stato della prenotazione.
@@ -15,7 +17,6 @@ public class Prenotazione {
     
     /**
      * Costruttore per creare una nuova prenotazione.
-     * Inizializza la prenotazione come attiva e genera un codice univoco.
      * 
      * @param passeggero Passeggero che effettua la prenotazione
      * @throws IllegalArgumentException se il passeggero è null
@@ -30,7 +31,9 @@ public class Prenotazione {
 		this.passeggero = passeggero;
 		this.volo = volo;
 		this.cancellata = false;
-	    this.codicePrenotazione = "PR" + (contatoreCodici++);  // Generazione codice prenotazione univoco
+		synchronized (Prenotazione.class) {
+            this.codicePrenotazione = "PR" + (contatoreCodici++);
+        }
 	}
 	
 	
@@ -87,15 +90,16 @@ public class Prenotazione {
     
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Prenotazione that = (Prenotazione) o;
-        return codicePrenotazione.equals(that.codicePrenotazione);
+        if (this == o) 
+        	return true;
+        if (!(o instanceof Prenotazione p)) 
+        	return false;
+        return codicePrenotazione.equals(p.codicePrenotazione);
     }
 
     @Override
     public int hashCode() {
-        return codicePrenotazione.hashCode();
+        return Objects.hash(codicePrenotazione);
     }
     
 }

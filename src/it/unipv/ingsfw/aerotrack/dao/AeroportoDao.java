@@ -6,83 +6,40 @@ import java.sql.*;
 import it.unipv.ingsfw.aerotrack.models.Aeroporto;
 
 /**
- * Data Access Object per la gestione degli aeroporti nel database.
- * Implementa il pattern Singleton per garantire un'unica istanza della connessione.
+ * Data Access Object per la gestione degli aeroporti nel database MySQL.
  * Gestisce tutte le operazioni CRUD (Create, Read, Update, Delete) sugli aeroporti.
+ * Implementa IAeroportoDao.
  */
-public class AeroportoDao {
+public class AeroportoDao implements IAeroportoDao {
 	
-	private static AeroportoDao instance;     // Istanza singleton della classe
-	private Connection connection;            // Connessione al database SQLite
-	
-	
-	// Costruttore per Singleton
-	private AeroportoDao() {
-		try {
-			connection = DriverManager.getConnection("jdbc:sqlite:aeroporti.db");
-			try (Statement stmt = connection.createStatement()) {
-	            String createTableQuery = """
-	                CREATE TABLE IF NOT EXISTS aeroporti (
-	                    codice TEXT PRIMARY KEY,
-	                    nome TEXT NOT NULL,
-	                    latitudine REAL NOT NULL,
-	                    longitudine REAL NOT NULL,
-	                    numeroPiste INTEGER NOT NULL CHECK(numeroPiste > 0)
-	                )
-	                """;
-	            stmt.executeUpdate(createTableQuery);
-	        }
-  
-            // Messaggio di conferma per il debug
-            System.out.println("Database aeroporti inizializzato correttamente");
-            
-        } catch (SQLException e) {
-            // In caso di errore durante l'inizializzazione
-            System.err.println("Errore durante l'inizializzazione del database aeroporti");
-            e.printStackTrace();
-            throw new RuntimeException("Impossibile inizializzare il database aeroporti", e);
-        }
+	private static AeroportoDao instance;
+
+    private AeroportoDao() {}
+
+    public static AeroportoDao getInstance() {
+        if (instance == null) instance = new AeroportoDao();
+        return instance;
     }
-	
+
 	/**
-     * Restituisce l'istanza singleton della classe AeroportoDao.
-     * Se l'istanza non esiste ancora, la crea.
+     * Aggiunge o aggiorna un aeroporto.
      * 
-     * @return istanza di AeroportoDao
+     * @param a Aeroporto da aggiungere/aggiornare.
      */
-	public static synchronized AeroportoDao getInstance() {
-		if (instance == null) {
-			instance = new AeroportoDao();
-		}
-		return instance;
-	}
-
-	/**
-     * Chiude la connessione al database.
-     * Chiamare solo quando l'applicazione termina!
-     */
-    public void close() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Connessione al database aeroporti chiusa.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-	 
-     // Metodo aggiungiAeroporto(): aggiunge o aggiorna un aeroporto (INSERT OR REPLACE).
-    
-	public void aggiungiAeroporto(Aeroporto a) {
+    @Override
+    public void aggiungiAeroporto(Aeroporto a) {
         if (a == null) throw new IllegalArgumentException("L'aeroporto non può essere null");
         String insertQuery = """
-            INSERT OR REPLACE INTO aeroporti
-            (codice, nome, latitudine, longitudine, numeroPiste)
+            INSERT INTO aeroporti (codice, nome, latitudine, longitudine, numeroPiste)
             VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+                nome = VALUES(nome),
+                latitudine = VALUES(latitudine),
+                longitudine = VALUES(longitudine),
+                numeroPiste = VALUES(numeroPiste)
             """;
-        try (PreparedStatement ps = connection.prepareStatement(insertQuery)) {
+        try (Connection conn = DBConnection.startConnection("aerotrack");
+             PreparedStatement ps = conn.prepareStatement(insertQuery)) {
             ps.setString(1, a.getCodice());
             ps.setString(2, a.getNome());
             ps.setDouble(3, a.getLatitudine());
@@ -91,52 +48,50 @@ public class AeroportoDao {
             ps.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Errore inserimento aeroporto: " + e.getMessage());
-            e.printStackTrace();
         }
     }
-	
-	/**
-     * Metodo getTuttiAeroporti(): restituisce tutti gli aeroporti presenti nel database.
+
+    /**
+     * Restituisce tutti gli aeroporti nel database.
      * 
-     * @return Lista di tutti gli aeroporti nel database
-     */ 
-	public List<Aeroporto> getTuttiAeroporti(){
-		List<Aeroporto> listaAeroporti = new ArrayList<>();
-		String query = "SELECT * FROM aeroporti ORDER BY codice";
-        try (Statement stmt = connection.createStatement();
+     * @return lista di Aeroporti.
+     */
+    @Override
+    public List<Aeroporto> getTuttiAeroporti() {
+        List<Aeroporto> listaAeroporti = new ArrayList<>();
+        String query = "SELECT * FROM aeroporti ORDER BY codice";
+        try (Connection conn = DBConnection.startConnection("aerotrack");
+             Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                Aeroporto aeroporto = new Aeroporto(
+                Aeroporto a = new Aeroporto(
                         rs.getString("codice"),
                         rs.getString("nome"),
                         rs.getDouble("latitudine"),
                         rs.getDouble("longitudine"),
                         rs.getInt("numeroPiste"));
-                listaAeroporti.add(aeroporto);
+                listaAeroporti.add(a);
             }
-            System.out.println("Recuperati " + listaAeroporti.size() + " aeroporti dal database");
         } catch (SQLException e) {
-            System.err.println("Errore durante il recupero degli aeroporti: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Errore recupero aeroporti: " + e.getMessage());
         }
         return listaAeroporti;
     }
-        
-	
-	/**
-     * Metodo cercaPerCodice(): cerca un aeroporto con il suo codice IATA.
+
+    /**
+     * Cerca un aeroporto tramite codice.
      * 
-     * @param codice Il codice IATA dell'aeroporto da cercare (es. "MXP")
-     * @return L'aeroporto trovato, null se non esiste
-     * @throws IllegalArgumentException se il codice è null o vuoto
+     * @param codice Codice IATA.
+     * @return Aeroporto trovato, null se non esiste.
      */
+    @Override
     public Aeroporto cercaPerCodice(String codice) {
         if (codice == null || codice.isEmpty()) {
             throw new IllegalArgumentException("Il codice aeroporto non può essere null o vuoto");
         }
-       
         String selectQuery = "SELECT * FROM aeroporti WHERE codice = ?";
-        try (PreparedStatement ps = connection.prepareStatement(selectQuery)) {
+        try (Connection conn = DBConnection.startConnection("aerotrack");
+             PreparedStatement ps = conn.prepareStatement(selectQuery)) {
             ps.setString(1, codice.toUpperCase());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -146,28 +101,33 @@ public class AeroportoDao {
                         rs.getDouble("latitudine"),
                         rs.getDouble("longitudine"),
                         rs.getInt("numeroPiste"));
-            } else {
-                System.out.println("Aeroporto con codice " + codice + " non trovato");
             }
         } catch (SQLException e) {
-            System.err.println("Errore durante la ricerca dell'aeroporto: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Errore ricerca aeroporto: " + e.getMessage());
         }
         return null;
     }
-    
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-            }
+
+    /**
+     * Rimuove un aeroporto tramite codice.
+     * 
+     * @param codice Codice aeroporto.
+     * @return true se rimosso, false altrimenti.
+     */
+    @Override
+    public boolean rimuoviAeroporto(String codice) {
+        if (codice == null || codice.isEmpty())
+            throw new IllegalArgumentException("Il codice aeroporto non può essere null o vuoto");
+        String delQuery = "DELETE FROM aeroporti WHERE codice = ?";
+        try (Connection conn = DBConnection.startConnection("aerotrack");
+             PreparedStatement ps = conn.prepareStatement(delQuery)) {
+            ps.setString(1, codice.toUpperCase());
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Errore durante la rimozione dell'aeroporto: " + e.getMessage());
         }
+        return false;
     }
-}               
-	           
-	                
-
-
-//cosa ne pensi??
+}
+	
+	

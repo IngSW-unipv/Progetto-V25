@@ -10,27 +10,36 @@ import java.awt.*;
 public class MainFrame extends JFrame {
     
     public MainFrame() {
-        super("Progetto-V25 - Applicazione Universitaria");
+        super("AeroTrack - Applicazione Universitaria");
 
         // Imposta la chiusura del programma alla chiusura della finestra
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Imposta dimensioni iniziali
-        setSize(600, 400);
+        setSize(800, 600);
         setLocationRelativeTo(null); // Centra la finestra sullo schermo
 
-        // Costruisce il pannello principale con layout BorderLayout
-        JPanel panel = new JPanel(new BorderLayout());
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.addTab("Aeroporti", new AeroportoPanel());
+        // tabbedPane.addTab("Voli", new VoloPanel()); // Da implementare analogamente
+        // tabbedPane.addTab("Prenotazioni", new PrenotazionePanel()); // Da implementare analogamente
 
-        // Messaggio di benvenuto
+        add(tabbedPane, BorderLayout.CENTER);
+
+        setVisible(true);
+        // Tab di Benvenuto
+        JPanel welcomePanel = new JPanel(new BorderLayout());
         JLabel label = new JLabel("Benvenuto nella demo del progetto!", SwingConstants.CENTER);
         label.setFont(new Font("Arial", Font.BOLD, 20));
-        panel.add(label, BorderLayout.CENTER);
+        welcomePanel.add(label, BorderLayout.CENTER);
+        tabbedPane.addTab("Benvenuto", welcomePanel);
 
-        // Aggiunge il pannello al frame
-        setContentPane(panel);
+        tabbedPane.addTab("Aeroporti", new AeroportoPanel());
+        // tabbedPane.addTab("Voli", new VoloPanel());
+        // tabbedPane.addTab("Prenotazioni", new PrenotazionePanel());
 
-        // Imposta la finestra come visibile
+        setContentPane(tabbedPane);
         setVisible(true);
+        }
     }
-}
+    
