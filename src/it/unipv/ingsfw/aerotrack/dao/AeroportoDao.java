@@ -11,19 +11,21 @@ import it.unipv.ingsfw.aerotrack.models.Aeroporto;
  * Implementa IAeroportoDao.
  */
 public class AeroportoDao implements IAeroportoDao {
-	
-	private static AeroportoDao instance;
+
+    private static AeroportoDao instance;
 
     private AeroportoDao() {}
 
     public static AeroportoDao getInstance() {
-        if (instance == null) instance = new AeroportoDao();
+        if (instance == null) {
+            instance = new AeroportoDao();
+        }
         return instance;
     }
 
-	/**
+    /**
      * Aggiunge o aggiorna un aeroporto.
-     * 
+     *
      * @param a Aeroporto da aggiungere/aggiornare.
      */
     @Override
@@ -53,7 +55,7 @@ public class AeroportoDao implements IAeroportoDao {
 
     /**
      * Restituisce tutti gli aeroporti nel database.
-     * 
+     *
      * @return lista di Aeroporti.
      */
     @Override
@@ -80,7 +82,7 @@ public class AeroportoDao implements IAeroportoDao {
 
     /**
      * Cerca un aeroporto tramite codice.
-     * 
+     *
      * @param codice Codice IATA.
      * @return Aeroporto trovato, null se non esiste.
      */
@@ -110,7 +112,7 @@ public class AeroportoDao implements IAeroportoDao {
 
     /**
      * Rimuove un aeroporto tramite codice.
-     * 
+     *
      * @param codice Codice aeroporto.
      * @return true se rimosso, false altrimenti.
      */
@@ -129,5 +131,3 @@ public class AeroportoDao implements IAeroportoDao {
         return false;
     }
 }
-	
-	

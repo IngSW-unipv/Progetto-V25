@@ -12,16 +12,18 @@ import it.unipv.ingsfw.aerotrack.models.Aeroporto;
  * Gestisce tutte le operazioni CRUD sui voli.
  */
 public class VoloDao implements IVoloDao {
-	private static VoloDao instance;
+    private static VoloDao instance;
     private final AeroportoDao aeroportoDao = AeroportoDao.getInstance();
 
     private VoloDao() {}
 
     public static VoloDao getInstance() {
-        if (instance == null) instance = new VoloDao();
+        if (instance == null) {
+            instance = new VoloDao();
+        }
         return instance;
     }
-    
+
     /**
      * Aggiunge o aggiorna un volo.
      * 

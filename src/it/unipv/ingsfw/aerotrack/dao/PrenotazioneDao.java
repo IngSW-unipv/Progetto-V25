@@ -16,7 +16,9 @@ public class PrenotazioneDao implements IPrenotazioneDao {
     private PrenotazioneDao() {}
 
     public static PrenotazioneDao getInstance() {
-        if (instance == null) instance = new PrenotazioneDao();
+        if (instance == null) {
+            instance = new PrenotazioneDao();
+        }
         return instance;
     }
 
