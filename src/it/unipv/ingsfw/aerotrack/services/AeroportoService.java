@@ -25,7 +25,7 @@ public class AeroportoService {
             throw new IllegalArgumentException("Codice aeroporto deve essere di 3 caratteri");
         }
         
-        if (nome == null || nome.trim().isEmpty()) {
+        if (nome == null || nome.isEmpty()) {
             throw new IllegalArgumentException("Nome aeroporto non può essere vuoto");
         }
         
@@ -49,7 +49,7 @@ public class AeroportoService {
      * Restituisce tutti gli aeroporti dal database.
      */
     public List<Aeroporto> getTuttiAeroporti() {
-        return aeroportoDao.getTuttiGliAeroporti();
+        return aeroportoDao.getTuttiAeroporti();
     }
    
 }

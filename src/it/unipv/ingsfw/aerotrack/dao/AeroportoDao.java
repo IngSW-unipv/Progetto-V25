@@ -21,16 +21,32 @@ public class AeroportoDao {
      * 
      * @return istanza di AeroportoDao
      */
-	public static AeroportoDao getInstance() {
+	public static synchronized AeroportoDao getInstance() {
 		if (instance == null) {
 			instance = new AeroportoDao();
 		}
 		return instance;
 	}
-	
+
+	/**
+     * Chiude la connessione al database.
+     * Chiamare solo quando l'applicazione termina!
+     */
+    public void close() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                System.out.println("Connessione al database aeroporti chiusa.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 	 
      // Metodo aggiungiAeroporto(): aggiunge o aggiorna un aeroporto (INSERT OR REPLACE).
-	public boolean aggiungiAeroporto(Aeroporto a) {
+    
+	public void aggiungiAeroporto(Aeroporto a) {
         if (a == null) throw new IllegalArgumentException("L'aeroporto non può essere null");
         String insertQuery = """
             INSERT OR REPLACE INTO aeroporti
@@ -43,11 +59,10 @@ public class AeroportoDao {
             ps.setDouble(3, a.getLatitudine());
             ps.setDouble(4, a.getLongitudine());
             ps.setInt(5, a.getNumeroPiste());
-            return ps.executeUpdate() > 0;
+            ps.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Errore inserimento aeroporto: " + e.getMessage());
             e.printStackTrace();
-            return false;
         }
     }
 	
@@ -56,7 +71,7 @@ public class AeroportoDao {
      * 
      * @return Lista di tutti gli aeroporti nel database
      */ 
-	public List<Aeroporto> getTuttiGliAeroporti(){
+	public List<Aeroporto> getTuttiAeroporti(){
 		List<Aeroporto> listaAeroporti = new ArrayList<>();
 		String query = "SELECT * FROM aeroporti ORDER BY codice";
         try (Statement stmt = connection.createStatement();
@@ -110,6 +125,16 @@ public class AeroportoDao {
             e.printStackTrace();
         }
         return null;
+    }
+    
+    public void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }               
 	           

@@ -19,10 +19,8 @@ public class VoloDao {
 	/**
      * Restituisce l'istanza singleton della classe VoloDao.
      * Se l'istanza non esiste ancora, la crea.
-     * 
-     * @return istanza di VoloDao
      */
-	public static VoloDao getInstance() {
+	public static synchronized VoloDao getInstance() {
 		if (instance == null) {
 			instance = new VoloDao();
 		}
@@ -85,6 +83,33 @@ public class VoloDao {
         }
         return listaVoli;
     }
+	
+	// Metodo trovaVoliPerPartenza(): trava i voli in partenza.
+	public List<Volo> trovaVoliPerPartenza(String codiceAeroporto) {
+	    List<Volo> listaVoli = new ArrayList<>();
+	    String query = "SELECT * FROM voli WHERE partenza = ?";
+	    try (PreparedStatement ps = connection.prepareStatement(query)) {
+	        ps.setString(1, codiceAeroporto);
+	        ResultSet rs = ps.executeQuery();
+	        while (rs.next()) {
+	            Aeroporto partenza = aeroportoDao.cercaPerCodice(rs.getString("partenza"));
+	            Aeroporto destinazione = aeroportoDao.cercaPerCodice(rs.getString("destinazione"));
+	            if (partenza != null && destinazione != null) {
+	                Volo v = new Volo(
+	                    rs.getString("codice"),
+	                    partenza,
+	                    destinazione,
+	                    rs.getDouble("orario_partenza"),
+	                    rs.getDouble("velocita")
+	                );
+	                listaVoli.add(v);
+	            }
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return listaVoli;
+	}
 		
 	 /**
      *  Metodo cercaPerCodice(): cerca un volo con il suo codice identificativo.
@@ -146,9 +171,23 @@ public class VoloDao {
         }
         return false;
     }
+	
+    /**
+    * Chiude la connessione al database.
+    * Chiamare solo quando l'applicazione termina!
+    */
+   public void close() {
+       try {
+           if (connection != null && !connection.isClosed()) {
+               connection.close();
+               System.out.println("Connessione al database voli chiusa.");
+           }
+       } catch (SQLException e) {
+           e.printStackTrace();
+       }
+   }
 }
 
 
 //cosa ne pensi??Lo faresti diversamente??
 
-// Trova tutti i voli che partono da un determinato aeroporto. metteresti anche questo??

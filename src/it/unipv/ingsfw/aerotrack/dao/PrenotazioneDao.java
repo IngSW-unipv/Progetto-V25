@@ -13,14 +13,6 @@ public class PrenotazioneDao {
 	private static PrenotazioneDao instance; 
 	private Connection connection;
 	private VoloDao voloDao;
-	
-    // Metodo per ottenere istanza della classe (Singleton)
-	public static PrenotazioneDao getInstance() {
-        if (instance == null) {
-            instance = new PrenotazioneDao();
-        }
-        return instance;
-    }
     
 	// Metodo per aggiungere una nuova prenotazione al database
     public boolean aggiungiPrenotazione(Prenotazione prenotazione) {
@@ -47,7 +39,7 @@ public class PrenotazioneDao {
     }
         
        
-    // Restituisce tutte le prenotazioni dal database.
+    // Restituisce tutte le prenotazioni dal database (sia attive che cancellate).
     public List<Prenotazione> getTuttePrenotazioni() {
         List<Prenotazione> prenotazioni = new ArrayList<>();
         String query = "SELECT * FROM prenotazioni";
@@ -72,7 +64,17 @@ public class PrenotazioneDao {
             e.printStackTrace();
         }
         return prenotazioni;
-    }        
+    }  
+    
+    public void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 

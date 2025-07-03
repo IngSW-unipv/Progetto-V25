@@ -7,7 +7,10 @@ import it.unipv.ingsfw.aerotrack.services.PrenotazioneService;
 
 import java.util.*;
 
-
+/**
+ * Controller principale per la gestione del sistema AeroTrack.
+ * Incapsula i servizi e fornisce metodi coerenti per la UI.
+ */
 public class AeroTrackController {
 	
 	private final AeroportoService aeroportoService;
@@ -20,7 +23,7 @@ public class AeroTrackController {
         this.prenotazioneService = new PrenotazioneService();
     }
 
-	public void aggiungiAeroporto(String codice, String nome, double latitudine, double longitudine, int numeroPiste) {
+	public void creaAeroporto(String codice, String nome, double latitudine, double longitudine, int numeroPiste) {
 		aeroportoService.aggiungiAeroporto(codice, nome, latitudine, longitudine, numeroPiste);
     }
 	
@@ -44,7 +47,7 @@ public class AeroTrackController {
         return voloService.getTuttiVoli();
     }
 		
-	public void prenotaPasseggero(String nome, String cognome, String documento, String codiceVolo) {
+	public void creaPrenotazione(String nome, String cognome, String documento, String codiceVolo) {
 		prenotazioneService.creaPrenotazione(nome, cognome, documento, codiceVolo);
     }
 			
