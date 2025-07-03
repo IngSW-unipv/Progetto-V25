@@ -13,6 +13,18 @@ public class PrenotazioneDao {
 	private static PrenotazioneDao instance; 
 	private Connection connection;
 	private VoloDao voloDao;
+	
+	/**
+     * Restituisce l'istanza singleton della classe VoloDao.
+     * Se l'istanza non esiste ancora, la crea.
+     */
+	public static synchronized PrenotazioneDao getInstance() {
+		if (instance == null) {
+			instance = new PrenotazioneDao();
+		}
+		return instance;
+	}
+	
     
 	// Metodo per aggiungere una nuova prenotazione al database
     public boolean aggiungiPrenotazione(Prenotazione prenotazione) {
