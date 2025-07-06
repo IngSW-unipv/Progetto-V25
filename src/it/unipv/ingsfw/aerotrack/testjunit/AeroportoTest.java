@@ -22,5 +22,17 @@ public class AeroportoTest {
         });
     }
     
-
+    @Test
+    public void testNomeVuoto() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Aeroporto("MXP", "", 45.63, 8.72, 2);
+        });
+    }    
+    
+    @Test
+    public void testEqualsAeroporto() {
+        Aeroporto a1 = new Aeroporto("MXP", "Malpensa", 45.63, 8.72, 2);
+        Aeroporto a2 = new Aeroporto("MXP", "Malpensa2", 45.63, 8.73, 3);
+        assertEquals(a1, a2); // stesso codice = equals true
+    }
 }

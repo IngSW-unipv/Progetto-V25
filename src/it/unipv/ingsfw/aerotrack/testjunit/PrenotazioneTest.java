@@ -28,6 +28,13 @@ public class PrenotazioneTest {
         pr.cancella();
         assertTrue(pr.isCancellata());
     }
+    
+    @Test
+    public void testPrenotazionePasseggeroNull() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Prenotazione(null, null);
+        });
+    }
 }
 
 
