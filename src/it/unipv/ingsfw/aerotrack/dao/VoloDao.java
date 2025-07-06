@@ -34,13 +34,16 @@ public class VoloDao implements IVoloDao {
     public boolean aggiungiVolo(Volo v) {
         if (v == null) throw new IllegalArgumentException("Il volo non può essere null");
         String insertQuery = """
-            INSERT INTO voli (codice, partenza, destinazione, orario_partenza, velocita)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO voli (codice, partenza, destinazione, orario_partenza, velocita, pista_assegnata, ritardo, stato)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE
                 partenza = VALUES(partenza),
                 destinazione = VALUES(destinazione),
                 orario_partenza = VALUES(orario_partenza),
-                velocita = VALUES(velocita)
+                velocita = VALUES(velocita),
+                pista_assegnata = VALUES(pista_assegnata),
+                ritardo = VALUES(ritardo),
+                stato = VALUES(stato)
             """;
         try (Connection conn = DBConnection.startConnection("aerotrack");
              PreparedStatement ps = conn.prepareStatement(insertQuery)) {
@@ -49,6 +52,9 @@ public class VoloDao implements IVoloDao {
             ps.setString(3, v.getDestinazione().getCodice());
             ps.setDouble(4, v.getOrarioPartenza());
             ps.setDouble(5, v.getVelocita());
+            ps.setInt(6, v.getPistaAssegnata());
+            ps.setDouble(7, v.getRitardo());
+            ps.setString(8, v.getStato() != null ? v.getStato().name() : "PROGRAMMATO");
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Errore inserimento volo: " + e.getMessage());
@@ -79,6 +85,9 @@ public class VoloDao implements IVoloDao {
                             rs.getDouble("orario_partenza"),
                             rs.getDouble("velocita")
                     );
+                    v.setPistaAssegnata(rs.getInt("pista_assegnata"));
+                    v.setRitardo(rs.getDouble("ritardo"));
+                    v.setStato(Volo.StatoVolo.valueOf(rs.getString("stato")));
                     listaVoli.add(v);
                 }
             }
@@ -107,13 +116,17 @@ public class VoloDao implements IVoloDao {
                 Aeroporto partenza = aeroportoDao.cercaPerCodice(rs.getString("partenza"));
                 Aeroporto destinazione = aeroportoDao.cercaPerCodice(rs.getString("destinazione"));
                 if (partenza != null && destinazione != null) {
-                    return new Volo(
-                            rs.getString("codice"),
+                	Volo v = new Volo (
+                			rs.getString("codice"),
                             partenza,
                             destinazione,
                             rs.getDouble("orario_partenza"),
                             rs.getDouble("velocita")
                     );
+                	v.setPistaAssegnata(rs.getInt("pista_assegnata"));
+                    v.setRitardo(rs.getDouble("ritardo"));
+                    v.setStato(Volo.StatoVolo.valueOf(rs.getString("stato")));
+                    return v;
                 }
             }
         } catch (SQLException e) {

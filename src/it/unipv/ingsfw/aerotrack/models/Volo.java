@@ -148,6 +148,19 @@ public class Volo {
     public int getPistaAssegnata() { 
         return pistaAssegnata; 
     }
+    
+    // === SETTER ===
+    public void setStato(StatoVolo stato) {
+        this.stato = stato;
+    }
+
+    public void setPistaAssegnata(int pistaAssegnata) {
+        this.pistaAssegnata = pistaAssegnata;
+    }
+
+    public void setRitardo(double ritardo) {
+        this.ritardo = ritardo;
+    }
 
     /**
      * Aggiunge una prenotazione al volo.
