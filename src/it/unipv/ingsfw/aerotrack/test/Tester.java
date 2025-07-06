@@ -37,5 +37,3 @@ public class Tester {
         }
     }
 }
-
-// cosa ne pensi??

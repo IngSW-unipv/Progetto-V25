@@ -21,7 +21,7 @@ public class VoloPanel extends JPanel {
         setLayout(new BorderLayout());
 
         // Tabella voli
-        tableModel = new DefaultTableModel(new Object[]{"Codice", "Partenza", "Destinazione", "Orario", "Velocità"}, 0) {
+        tableModel = new DefaultTableModel(new Object[]{"Codice", "Partenza", "Destinazione", "Orario", "Velocità","Pista"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
@@ -50,7 +50,8 @@ public class VoloPanel extends JPanel {
                 v.getPartenza().getCodice(),
                 v.getDestinazione().getCodice(),
                 v.getOrarioPartenza(),
-                v.getVelocita()
+                v.getVelocita(),
+                v.getPistaAssegnata()
             });
         }
     }

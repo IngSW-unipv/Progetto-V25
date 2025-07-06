@@ -29,6 +29,3 @@ public class TestController {
         System.out.println(v);
     }
 }
-
-
-// cosa ne pensii???

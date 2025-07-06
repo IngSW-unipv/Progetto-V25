@@ -34,7 +34,7 @@ public class Volo {
     private final List<Prenotazione> prenotazioni;
     private double ritardo;
     private StatoVolo stato;
-    private int pistaAssegnata = -1;
+    private int pistaAssegnata;
 	
 	
     /**
@@ -63,24 +63,16 @@ public class Volo {
         this.velocita = velocita;
         this.prenotazioni = new ArrayList<>();
         this.ritardo = 0;                        
-        this.pistaAssegnata = -1;
         
         // Aggiorna le liste degli aeroporti
         partenza.aggiungiVoloInPartenza(this);
         destinazione.aggiungiVoloInArrivo(this);
-  
-        // Assegna una pista libera, altrimenti stato IN_ATTESA e ritardo
-        boolean pistaTrovata = false;
-        for (int i = 0; i < partenza.getNumeroPiste(); i++) {
-            if (partenza.getPiste()[i] == null) {
-                partenza.occupaPista(i, this);
-                this.pistaAssegnata = i;
-                this.stato = StatoVolo.PROGRAMMATO;
-                pistaTrovata = true;
-                break;
-            }    
-        }
-        if (!pistaTrovata) {
+        
+        this.pistaAssegnata = trovaPista();
+        
+        
+        //in caso tutte le piste siano occupate
+        if (pistaAssegnata==-1) {
             this.ritardo = calcolaRitardo();
             this.stato = StatoVolo.IN_ATTESA;
         }
@@ -169,6 +161,25 @@ public class Volo {
             prenotazioni.add(p);	
         }
     }
+    
+    /**
+    *  Assegna una pista libera e cambia lo stato in PROGRAMMATO
+    **/
+    public int trovaPista() {
+        int pista=-1;
+    	for (int i = 0; i < partenza.getNumeroPiste(); i++) {
+            if (partenza.getPiste()[i] == null) {
+                partenza.occupaPista(i, this);
+                pista= i;
+                this.stato = StatoVolo.PROGRAMMATO;
+                break;
+            }    
+        }
+        
+        return pista;
+        
+    }
+
 	   
     /**
      * Cancella una prenotazione basandosi sul documento del passeggero.

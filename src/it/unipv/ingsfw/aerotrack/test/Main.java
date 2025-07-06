@@ -36,5 +36,3 @@ public class Main {
         System.out.println("\nDettagli volo trovato: " + v);
     }
 }
-
-//cosa ne pensi??
