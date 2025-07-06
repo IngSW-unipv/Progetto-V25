@@ -13,6 +13,12 @@ public class Main {
 
         AeroportoService aeroportoService = AeroportoService.getInstance();
         VoloService voloService = VoloService.getInstance();
+        PrenotazioneService prenotazioneService = PrenotazioneService.getInstance();
+
+        // SVUOTA TUTTE LE TABELLE per test pulito
+        prenotazioneService.svuotaPrenotazioni();
+        voloService.svuotaVoli();
+        aeroportoService.svuotaAeroporti();
         
         // Creo aeroporti di test
         aeroportoService.aggiungiAeroporto("MXP", "Milano Malpensa", 45.63, 8.72, 2);

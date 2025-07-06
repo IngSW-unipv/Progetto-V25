@@ -83,11 +83,12 @@ public class VoloDao implements IVoloDao {
                             partenza,
                             destinazione,
                             rs.getDouble("orario_partenza"),
-                            rs.getDouble("velocita")
+                            rs.getDouble("velocita"),
+                            rs.getInt("pista_assegnata"),
+                            rs.getDouble("ritardo"),
+                            Volo.StatoVolo.valueOf(rs.getString("stato"))
+                        
                     );
-                    v.setPistaAssegnata(rs.getInt("pista_assegnata"));
-                    v.setRitardo(rs.getDouble("ritardo"));
-                    v.setStato(Volo.StatoVolo.valueOf(rs.getString("stato")));
                     listaVoli.add(v);
                 }
             }
@@ -121,12 +122,12 @@ public class VoloDao implements IVoloDao {
                             partenza,
                             destinazione,
                             rs.getDouble("orario_partenza"),
-                            rs.getDouble("velocita")
-                    );
-                	v.setPistaAssegnata(rs.getInt("pista_assegnata"));
-                    v.setRitardo(rs.getDouble("ritardo"));
-                    v.setStato(Volo.StatoVolo.valueOf(rs.getString("stato")));
-                    return v;
+                            rs.getDouble("velocita"),
+                            rs.getInt("pista_assegnata"),
+                            rs.getDouble("ritardo"),
+                            Volo.StatoVolo.valueOf(rs.getString("stato"))
+                        );
+                        return v;
                 }
             }
         } catch (SQLException e) {

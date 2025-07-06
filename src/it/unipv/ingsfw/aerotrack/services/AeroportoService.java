@@ -1,8 +1,12 @@
 package it.unipv.ingsfw.aerotrack.services;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import it.unipv.ingsfw.aerotrack.dao.AeroportoDao;
+import it.unipv.ingsfw.aerotrack.dao.DBConnection;
 import it.unipv.ingsfw.aerotrack.models.Aeroporto;
 import it.unipv.ingsfw.aerotrack.utils.CSVUtils;
 
@@ -23,6 +27,16 @@ public class AeroportoService {
     public static AeroportoService getInstance() {
         if (instance == null) instance = new AeroportoService();
         return instance;
+    }
+    
+    public void svuotaAeroporti() {
+        try (Connection conn = DBConnection.startConnection("aerotrack");
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("DELETE FROM aeroporti");
+            System.out.println("Tabella aeroporti svuotata.");
+        } catch (SQLException e) {
+            System.err.println("Errore durante lo svuotamento della tabella aeroporti: " + e.getMessage());
+        }
     }
     
     /**

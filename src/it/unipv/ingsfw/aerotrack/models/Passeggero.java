@@ -43,6 +43,15 @@ public class Passeggero {
 	}
 	
 	//metodi 
+	
+	public String getNome() {
+	    return nome;
+	}
+
+	public String getCognome() {
+	    return cognome;
+	}
+	
 	/**
      * Restituisce il nome completo (nome e cognome) del passeggero.
      * 

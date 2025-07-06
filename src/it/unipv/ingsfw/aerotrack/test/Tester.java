@@ -16,6 +16,12 @@ public class Tester {
         VoloService voloService = VoloService.getInstance();
         PrenotazioneService prenotazioneService = PrenotazioneService.getInstance();
 
+        // *** SVUOTA LA TABELLA PRIMA DEL TEST ***
+        prenotazioneService.svuotaPrenotazioni();
+        
+        // INIZIALIZZA IL CONTATORE DEI CODICI PRENOTAZIONE!
+        prenotazioneService.getTuttePrenotazioni();
+
         // Inizializza aeroporti e voli
         aeroportoService.aggiungiAeroporto("LIN", "Milano Linate", 45.45, 9.27, 2);
         aeroportoService.aggiungiAeroporto("NAP", "Napoli Capodichino", 40.88, 14.29, 2);

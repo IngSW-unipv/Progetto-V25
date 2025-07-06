@@ -79,6 +79,29 @@ public class Volo {
     }
 	
     /**
+     * Costruttore secondario
+     */
+    public Volo(String codice, Aeroporto partenza, Aeroporto destinazione, double orarioPartenza, double velocita,
+                int pistaAssegnata, double ritardo, StatoVolo stato) {
+        if (codice == null || codice.isEmpty())
+            throw new IllegalArgumentException("Codice volo null");
+        if (partenza == null || destinazione == null)
+            throw new IllegalArgumentException("Aeroporto partenza/destinazione null");
+        if (velocita <= 0)
+            throw new IllegalArgumentException("Velocità non valida");
+
+        this.codice = codice;
+        this.partenza = partenza;
+        this.destinazione = destinazione;
+        this.orarioPartenza = orarioPartenza;
+        this.velocita = velocita;
+        this.prenotazioni = new ArrayList<>();
+        this.pistaAssegnata = pistaAssegnata;
+        this.ritardo = ritardo;
+        this.stato = stato;
+    }
+    
+    /**
      * Restituisce il codice del volo.
      * 
      * @return Codice identificativo del volo

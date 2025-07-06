@@ -83,6 +83,13 @@ public class AeroTrackFacade {
         return prenotazioneService.getTuttePrenotazioni();
     }
     
+    /**
+     * Svuota la tabella delle prenotazioni (da usare nei test per avere dati puliti).
+     */
+    public void svuotaPrenotazioni() {
+        prenotazioneService.svuotaPrenotazioni();
+    }
+    
     // ===== INIZIALIZZAZIONE DATI ESEMPIO =====
     public void inizializzaDatiEsempio() {
         try {

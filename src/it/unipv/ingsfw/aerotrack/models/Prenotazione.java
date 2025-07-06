@@ -15,28 +15,42 @@ public class Prenotazione {
     private final String codicePrenotazione;
     private static int contatoreCodici = 1000;
     
+    
+    public Prenotazione(Passeggero passeggero, Volo volo) {
+        if (passeggero == null) 
+        	throw new IllegalArgumentException("Il passeggero non può essere null");
+        this.passeggero = passeggero;
+        this.volo = volo;
+        this.cancellata = false;
+        synchronized (Prenotazione.class) {
+            this.codicePrenotazione = "PR" + (contatoreCodici++);
+        }
+    }
+    
     /**
      * Costruttore per creare una nuova prenotazione.
      * 
      * @param passeggero Passeggero che effettua la prenotazione
      * @throws IllegalArgumentException se il passeggero è null
      */
-	public Prenotazione (Passeggero passeggero, Volo volo) {
+	public Prenotazione (String codicePrenotazione, Passeggero passeggero, Volo volo, boolean cancellata) {
 		// Validazione del parametro
         if(passeggero == null) {
             throw new IllegalArgumentException("Il passeggero non può essere null");
         }
         
         // Inizializzazione degli attributi
+        this.codicePrenotazione = codicePrenotazione;
 		this.passeggero = passeggero;
 		this.volo = volo;
-		this.cancellata = false;
-		synchronized (Prenotazione.class) {
-            this.codicePrenotazione = "PR" + (contatoreCodici++);
-        }
+		this.cancellata = cancellata;
 	}
 	
-	
+	// Aggiorna il contatore al massimo valore trovato in DB
+    public static void aggiornaContatore(int nuovoValore) {
+        contatoreCodici = nuovoValore;
+    }
+    
 	 /**
      * Verifica se la prenotazione è stata cancellata.
      * 

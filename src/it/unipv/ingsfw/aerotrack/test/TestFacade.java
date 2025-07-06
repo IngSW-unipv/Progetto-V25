@@ -8,6 +8,12 @@ public class TestFacade {
         System.out.println("=== TEST FACADE ===");
         AeroTrackFacade facade = new AeroTrackFacade();
 
+        // *** SVUOTA LA TABELLA PRIMA DEL TEST ***
+        facade.svuotaPrenotazioni();
+
+        // INIZIALIZZAZIONE DEL CONTATORE DEI CODICI!
+        facade.getPrenotazioni();
+        
         // Aggiungi aeroporti e voli tramite controller
         facade.creaAeroporto("VCE", "Venezia Marco Polo", 45.51, 12.35, 2);
         facade.creaAeroporto("NAP", "Napoli Capodichino", 40.88, 14.29, 1);
@@ -19,15 +25,23 @@ public class TestFacade {
 
         // Visualizza prenotazioni attive
         System.out.println("\nPrenotazioni attive:");
-        for (Prenotazione p : facade.getPrenotazioni().stream().filter(pr -> !pr.isCancellata()).toList()) {
+        for (Prenotazione p : facade.getPrenotazioni()
+        		.stream()
+        		.filter(pr -> !pr.isCancellata())
+        		.toList()) {
             System.out.println(p);
         }
 
-        // Ricerca volo per codice
+        // Ricerca volo per codice e stampa dettagli con conteggio prenotazioni
         System.out.println("\nDettaglio volo IT500:");
         Volo v = facade.trovaVolo("IT500");
-        System.out.println(v);
-    }
+        long numPrenotazioni = facade.getPrenotazioni()
+                .stream()
+                .filter(p -> p.getVolo() != null && p.getVolo().getCodice().equals(v.getCodice()))
+                .count();
+            System.out.println("Volo " + v.getCodice() + ": " + v.getPartenza().getCodice() + " -> " + v.getDestinazione().getCodice()
+                + ", Partenza: " + v.getOrarioPartenza() + ", Passeggeri: " + numPrenotazioni);
+        }
 }
 
 

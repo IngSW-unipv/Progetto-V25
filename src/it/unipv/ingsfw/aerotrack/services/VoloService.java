@@ -1,5 +1,8 @@
 package it.unipv.ingsfw.aerotrack.services;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
 import it.unipv.ingsfw.aerotrack.dao.*;
@@ -24,6 +27,17 @@ public class VoloService {
         if (instance == null) instance = new VoloService();
         return instance;
     }
+    
+    public void svuotaVoli() {
+        try (Connection conn = DBConnection.startConnection("aerotrack");
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("DELETE FROM voli");
+            System.out.println("Tabella voli svuotata.");
+        } catch (SQLException e) {
+            System.err.println("Errore durante lo svuotamento della tabella voli: " + e.getMessage());
+        }
+    }
+    
     /**
      * Crea un nuovo volo dopo aver validato i dati.
      * 
