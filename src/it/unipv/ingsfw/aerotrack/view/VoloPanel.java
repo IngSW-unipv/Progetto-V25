@@ -51,7 +51,7 @@ public class VoloPanel extends JPanel {
                 v.getDestinazione().getCodice(),
                 v.getOrarioPartenza(),
                 v.getVelocita(),
-                v.getPistaAssegnata()
+                (v.getPistaAssegnata() >= 0) ? (v.getPistaAssegnata() + 1) : "-"
             });
         }
     }
