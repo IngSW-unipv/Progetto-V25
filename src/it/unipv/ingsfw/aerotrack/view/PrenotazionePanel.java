@@ -21,9 +21,11 @@ public class PrenotazionePanel extends JPanel {
         setLayout(new BorderLayout());
 
         // Tabella prenotazioni
-        tableModel = new DefaultTableModel(new Object[]{"Codice Prenotazione", "Nome", "Cognome", "Documento", "Codice Volo", "Stato"}, 0) {
+        tableModel = new DefaultTableModel(
+        		new Object[]{"Codice Prenotazione", "Nome Completo", "Documento", "Codice Volo", "Stato"}, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) { 
+            	return false; }
         };
         table = new JTable(tableModel);
         add(new JScrollPane(table), BorderLayout.CENTER);
