@@ -36,8 +36,57 @@ public class VoloPanel extends JPanel {
         buttonPanel.add(removeBtn);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // Listener per aggiunta e rimozione (implementazione simile ad AeroportoPanel)
-
+        // Listener per aggiunta volo
+        addBtn.addActionListener(e -> {
+            JTextField codice = new JTextField();
+            JTextField partenza = new JTextField();
+            JTextField destinazione = new JTextField();
+            JTextField orario = new JTextField();
+            JTextField velocita = new JTextField();
+            Object[] fields = {
+                "Codice volo:", codice,
+                "Codice aeroporto partenza:", partenza,
+                "Codice aeroporto destinazione:", destinazione,
+                "Orario partenza:", orario,
+                "Velocità (km/h):", velocita
+            };
+            int res = JOptionPane.showConfirmDialog(this, fields, "Nuovo Volo", JOptionPane.OK_CANCEL_OPTION);
+            if (res == JOptionPane.OK_OPTION) {
+                try {
+                    voloService.creaVolo(
+                        codice.getText().trim(),
+                        partenza.getText().trim(),
+                        destinazione.getText().trim(),
+                        Double.parseDouble(orario.getText().trim()),
+                        Double.parseDouble(velocita.getText().trim())
+                    );
+                    aggiornaTabella();
+                    JOptionPane.showMessageDialog(this, "Volo aggiunto!");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Errore: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        
+     // Listener rimuovi volo
+        removeBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0) {
+                String codiceVolo = (String) table.getValueAt(row, 0);
+                int conferma = JOptionPane.showConfirmDialog(this, "Sei sicuro di voler rimuovere il volo " + codiceVolo + "?", "Conferma rimozione", JOptionPane.YES_NO_OPTION);
+                if (conferma == JOptionPane.YES_OPTION) {
+                    try {
+                        voloService.rimuoviVolo(codiceVolo);
+                        aggiornaTabella();
+                        JOptionPane.showMessageDialog(this, "Volo rimosso!");
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this, "Errore: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Seleziona un volo da rimuovere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+            }
+        });
         aggiornaTabella();
     }
 

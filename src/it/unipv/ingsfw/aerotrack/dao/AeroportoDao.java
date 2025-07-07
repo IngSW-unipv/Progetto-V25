@@ -1,7 +1,9 @@
 package it.unipv.ingsfw.aerotrack.dao;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.sql.*;
 import it.unipv.ingsfw.aerotrack.models.Aeroporto;
 
@@ -13,7 +15,7 @@ import it.unipv.ingsfw.aerotrack.models.Aeroporto;
 public class AeroportoDao implements IAeroportoDao {
 
     private static AeroportoDao instance;
-
+    private Map<String, Aeroporto> aeroportiCache = new HashMap<>();
     private AeroportoDao() {}
 
     public static AeroportoDao getInstance() {
@@ -48,6 +50,7 @@ public class AeroportoDao implements IAeroportoDao {
             ps.setDouble(4, a.getLongitudine());
             ps.setInt(5, a.getNumeroPiste());
             ps.executeUpdate();
+            aeroportiCache.put(a.getCodice(), a);
         } catch (SQLException e) {
             System.err.println("Errore inserimento aeroporto: " + e.getMessage());
         }
@@ -66,12 +69,19 @@ public class AeroportoDao implements IAeroportoDao {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                Aeroporto a = new Aeroporto(
-                        rs.getString("codice"),
+            	String codice = rs.getString("codice");
+                Aeroporto a;
+                if (aeroportiCache.containsKey(codice)) {
+                    a = aeroportiCache.get(codice);
+                } else {
+                    a = new Aeroporto(
+                        codice,
                         rs.getString("nome"),
                         rs.getDouble("latitudine"),
                         rs.getDouble("longitudine"),
                         rs.getInt("numeroPiste"));
+                    aeroportiCache.put(codice, a);
+                }
                 listaAeroporti.add(a);
             }
         } catch (SQLException e) {
@@ -91,18 +101,24 @@ public class AeroportoDao implements IAeroportoDao {
         if (codice == null || codice.isEmpty()) {
             throw new IllegalArgumentException("Il codice aeroporto non può essere null o vuoto");
         }
+        codice = codice.toUpperCase();
+        if (aeroportiCache.containsKey(codice)) {
+            return aeroportiCache.get(codice);
+        }
         String selectQuery = "SELECT * FROM aeroporti WHERE codice = ?";
         try (Connection conn = DBConnection.startConnection("aerotrack");
              PreparedStatement ps = conn.prepareStatement(selectQuery)) {
-            ps.setString(1, codice.toUpperCase());
+            ps.setString(1, codice);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return new Aeroporto(
+            	Aeroporto a = new Aeroporto(
                         rs.getString("codice"),
                         rs.getString("nome"),
                         rs.getDouble("latitudine"),
                         rs.getDouble("longitudine"),
                         rs.getInt("numeroPiste"));
+            	aeroportiCache.put(codice, a);
+            	return a;
             }
         } catch (SQLException e) {
             System.err.println("Errore ricerca aeroporto: " + e.getMessage());
@@ -124,7 +140,9 @@ public class AeroportoDao implements IAeroportoDao {
         try (Connection conn = DBConnection.startConnection("aerotrack");
              PreparedStatement ps = conn.prepareStatement(delQuery)) {
             ps.setString(1, codice.toUpperCase());
-            return ps.executeUpdate() > 0;
+            boolean ok = ps.executeUpdate() > 0;
+            if (ok) aeroportiCache.remove(codice.toUpperCase());
+            return ok;
         } catch (SQLException e) {
             System.err.println("Errore durante la rimozione dell'aeroporto: " + e.getMessage());
         }

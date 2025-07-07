@@ -59,13 +59,30 @@ public class VoloService {
         if (partenza == null || destinazione == null) {
             throw new IllegalArgumentException("Aeroporto di partenza o destinazione non trovato");
         }
-        Volo volo = new Volo(codice, partenza, destinazione, orario, velocita);
+        
+        // Trova la prima pista libera nell'aeroporto di partenza
+        int pistaLibera = -1;
+        for (int i = 0; i < partenza.getNumeroPiste(); i++) {
+            if (partenza.getPiste()[i] == null) {
+                pistaLibera = i;
+                break;
+            }
+        }
+        
+        Volo volo;
+        if (pistaLibera != -1) {
+            volo = new Volo(codice, partenza, destinazione, orario, velocita, pistaLibera, 0, Volo.StatoVolo.PROGRAMMATO);
+            partenza.occupaPista(pistaLibera, volo); // Aggiorna lo stato in memoria
+        } else {
+            // Nessuna pista libera: stato IN_ATTESA e calcolo ritardo
+            volo = new Volo(codice, partenza, destinazione, orario, velocita, -1, 0, Volo.StatoVolo.IN_ATTESA);
+        }
+
         if (!voloDao.aggiungiVolo(volo)) {
             throw new RuntimeException("Errore nell'inserimento del volo");
         }
     }
-    
-    
+     
     /**
      * Cerca un volo per codice.
      */

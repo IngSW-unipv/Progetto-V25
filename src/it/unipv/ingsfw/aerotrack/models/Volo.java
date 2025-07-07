@@ -68,7 +68,7 @@ public class Volo {
         partenza.aggiungiVoloInPartenza(this);
         destinazione.aggiungiVoloInArrivo(this);
         
-        this.pistaAssegnata = trovaPista();
+        
         
         
         //in caso tutte le piste siano occupate

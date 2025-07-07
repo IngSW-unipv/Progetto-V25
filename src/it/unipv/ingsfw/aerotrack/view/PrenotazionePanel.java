@@ -37,11 +37,11 @@ public class PrenotazionePanel extends JPanel {
         buttonPanel.add(addBtn);
         buttonPanel.add(removeBtn);
         add(buttonPanel, BorderLayout.SOUTH);
-
-        // Listener per aggiunta e cancellazione (implementazione simile ad AeroportoPanel)
-
-        aggiornaTabella();
     }
+
+     
+
+        
 
     private void aggiornaTabella() {
         tableModel.setRowCount(0);

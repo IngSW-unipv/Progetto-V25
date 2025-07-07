@@ -2,7 +2,10 @@ package it.unipv.ingsfw.aerotrack.dao;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import it.unipv.ingsfw.aerotrack.models.Volo;
 import it.unipv.ingsfw.aerotrack.models.Aeroporto;
 
@@ -70,13 +73,19 @@ public class VoloDao implements IVoloDao {
     @Override
     public List<Volo> getTuttiVoli() {
         List<Volo> listaVoli = new ArrayList<>();
+     // 1. Carica tutti gli aeroporti una sola volta in una mappa
+        Map<String, Aeroporto> aeroporti = new HashMap<>();
+        for (Aeroporto a : aeroportoDao.getTuttiAeroporti()) {
+            aeroporti.put(a.getCodice(), a);
+        } 
+        
         String query = "SELECT * FROM voli";
         try (Connection conn = DBConnection.startConnection("aerotrack");
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                Aeroporto partenza = aeroportoDao.cercaPerCodice(rs.getString("partenza"));
-                Aeroporto destinazione = aeroportoDao.cercaPerCodice(rs.getString("destinazione"));
+            	Aeroporto partenza = aeroporti.get(rs.getString("partenza"));
+                Aeroporto destinazione = aeroporti.get(rs.getString("destinazione"));
                 if (partenza != null && destinazione != null) {
                     Volo v = new Volo(
                             rs.getString("codice"),
@@ -89,6 +98,15 @@ public class VoloDao implements IVoloDao {
                             Volo.StatoVolo.valueOf(rs.getString("stato"))
                         
                     );
+                    // --- Ricostruisci le relazioni ---
+                    partenza.aggiungiVoloInPartenza(v);
+                    destinazione.aggiungiVoloInArrivo(v);
+                    int pista = rs.getInt("pista_assegnata");
+                    if (pista >= 0 && pista < partenza.getNumeroPiste()) {
+                        try {
+                            partenza.occupaPista(pista, v);
+                        } catch (Exception ignore) {} // pista già occupata da un altro volo con stessa pista? ignora
+                    }
                     listaVoli.add(v);
                 }
             }
