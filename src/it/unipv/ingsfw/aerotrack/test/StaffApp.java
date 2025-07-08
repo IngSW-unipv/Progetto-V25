@@ -1,13 +1,13 @@
 package it.unipv.ingsfw.aerotrack.test;
 
-import it.unipv.ingsfw.aerotrack.view.MainFrame;
+import it.unipv.ingsfw.aerotrack.view.StaffFrame;
 import javax.swing.*;
 
 /**
  * Avvio dell'applicazione AeroTrack.
  */
-public class MainApp {
+public class StaffApp {
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(MainFrame::new);
+        SwingUtilities.invokeLater(StaffFrame::new);
     }
 }

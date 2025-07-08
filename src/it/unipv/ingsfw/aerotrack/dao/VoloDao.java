@@ -55,7 +55,7 @@ public class VoloDao implements IVoloDao {
             ps.setString(3, v.getDestinazione().getCodice());
             ps.setDouble(4, v.getOrarioPartenza());
             ps.setDouble(5, v.getVelocita());
-            ps.setInt(6, v.getPistaAssegnata());
+            ps.setInt(6, v.getPistaAssegnata() + 1);
             ps.setDouble(7, v.getRitardo());
             ps.setString(8, v.getStato() != null ? v.getStato().name() : "PROGRAMMATO");
             return ps.executeUpdate() > 0;

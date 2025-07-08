@@ -100,7 +100,7 @@ public class PrenotazionePanel extends JPanel {
         aggiornaTabella();
     }
 
-    private void aggiornaTabella() {
+    public void aggiornaTabella() {
         tableModel.setRowCount(0);
         List<Prenotazione> prenotazioni = prenotazioneService.getTuttePrenotazioni();
         for (Prenotazione p : prenotazioni) {

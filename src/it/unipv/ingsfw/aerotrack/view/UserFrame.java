@@ -3,14 +3,20 @@ package it.unipv.ingsfw.aerotrack.view;
 import javax.swing.*;
 import java.awt.*;
 
+import it.unipv.ingsfw.aerotrack.models.Aeroporto;
+import it.unipv.ingsfw.aerotrack.services.*;
+
+import java.util.ArrayList;
+
 /**
  * Finestra principale dell’applicazione AeroTrack.
  * Mostra un messaggio di benvenuto e funge da base per l’interfaccia grafica.
  */
-public class MainFrame extends JFrame {
+public class UserFrame extends JFrame {
     
-    public MainFrame() {
-        super("AeroTrack - Applicazione Universitaria");
+    public UserFrame() {
+        super("AeroTrack - Applicazione Universitaria per gli utenti");
+        AeroportoService aeroportoService = AeroportoService.getInstance();
 
         // Imposta la chiusura del programma alla chiusura della finestra
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -29,9 +35,11 @@ public class MainFrame extends JFrame {
         tabbedPane.addTab("Benvenuto", welcomePanel);
 
         // Tab CRUD
-        tabbedPane.addTab("Aeroporti", new AeroportoPanel());
-        tabbedPane.addTab("Voli", new VoloPanel());
-        tabbedPane.addTab("Prenotazioni", new PrenotazionePanel());
+        PrenotazionePanel prenotazionePanel = new PrenotazionePanel(); 
+        VoloPanel voloPanel = new VoloPanel(prenotazionePanel);        
+
+        tabbedPane.addTab("Voli", voloPanel);
+        tabbedPane.addTab("Prenotazioni", prenotazionePanel);
 
         setContentPane(tabbedPane);
         setVisible(true);
