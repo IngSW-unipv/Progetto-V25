@@ -186,6 +186,20 @@ public class Volo {
     }
 
     /**
+     * Restituisce true se il volo è stato cancellato.
+     */
+    public boolean isCancellato() {
+        return stato == StatoVolo.CANCELLATO;
+    }
+
+    /**
+     * Imposta lo stato del volo a CANCELLATO.
+     */
+    public void setCancellato() {
+        this.stato = StatoVolo.CANCELLATO;
+    }
+    
+    /**
      * Aggiunge una prenotazione al volo.
      * Controlla che la prenotazione non sia null prima di aggiungerla.
      * 
