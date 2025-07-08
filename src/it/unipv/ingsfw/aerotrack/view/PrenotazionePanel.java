@@ -37,11 +37,68 @@ public class PrenotazionePanel extends JPanel {
         buttonPanel.add(addBtn);
         buttonPanel.add(removeBtn);
         add(buttonPanel, BorderLayout.SOUTH);
-    }
-
-     
-
         
+        // Listener aggiungi prenotazione
+        addBtn.addActionListener(e -> {
+            JTextField nome = new JTextField();
+            JTextField cognome = new JTextField();
+            JTextField documento = new JTextField();
+            JTextField codiceVolo = new JTextField();
+            Object[] fields = {
+                    "Nome:", nome,
+                    "Cognome:", cognome,
+                    "Documento:", documento,
+                    "Codice volo:", codiceVolo
+            };
+            int res = JOptionPane.showConfirmDialog(this, fields, "Nuova Prenotazione", JOptionPane.OK_CANCEL_OPTION);
+            if (res == JOptionPane.OK_OPTION) {
+                try {
+                    prenotazioneService.creaPrenotazione(
+                            nome.getText().trim(),
+                            cognome.getText().trim(),
+                            documento.getText().trim(),
+                            codiceVolo.getText().trim()
+                    );
+                    aggiornaTabella();
+                    JOptionPane.showMessageDialog(this, "Prenotazione aggiunta!");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Errore: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        // Listener cancella prenotazione (soft delete: segna come cancellata)
+        removeBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Seleziona una prenotazione da cancellare.");
+                return;
+            }
+            String codicePrenotazione = (String) tableModel.getValueAt(row, 0);
+            List<Prenotazione> prenotazioni = prenotazioneService.getTuttePrenotazioni();
+            Prenotazione prenotazione = prenotazioni.stream()
+                    .filter(p -> p.getCodicePrenotazione().equals(codicePrenotazione))
+                    .findFirst().orElse(null);
+
+            if (prenotazione == null) {
+                JOptionPane.showMessageDialog(this, "Prenotazione non trovata.", "Errore", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (prenotazione.isCancellata()) {
+                JOptionPane.showMessageDialog(this, "Prenotazione già cancellata.");
+                return;
+            }
+            int conf = JOptionPane.showConfirmDialog(this, "Sicuro di voler cancellare la prenotazione?", "Conferma", JOptionPane.YES_NO_OPTION);
+            if (conf == JOptionPane.YES_OPTION) {
+                prenotazione.cancella();
+                // Non serve salvare di nuovo su DB se la cancellazione è solo in memoria, ma si potrebbe aggiornare anche il DB qui
+                aggiornaTabella();
+                JOptionPane.showMessageDialog(this, "Prenotazione cancellata!");
+            }
+        });
+
+        aggiornaTabella();
+    }
 
     private void aggiornaTabella() {
         tableModel.setRowCount(0);
