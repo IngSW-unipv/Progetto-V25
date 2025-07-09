@@ -57,10 +57,108 @@ public class StaffVoloPanel extends JPanel {
         buttons.add(notifyBtn);
         add(buttons, BorderLayout.SOUTH);
 
-        addBtn.addActionListener(e -> aggiungiVolo());
-        delBtn.addActionListener(e -> eliminaVolo());
-        statoBtn.addActionListener(e -> statoRitardo());
-        notifyBtn.addActionListener(e -> notificaUtenti());
+        // Listener aggiungi nuovo volo
+        addBtn.addActionListener(e -> {
+        	JTextField codice = new JTextField();
+        	JComboBox<String> partenza = new JComboBox<>(aeroportoService.getTuttiAeroporti().stream().map(Aeroporto::getCodice).toArray(String[]::new));
+        	JComboBox<String> destinazione = new JComboBox<>(aeroportoService.getTuttiAeroporti().stream().map(Aeroporto::getCodice).toArray(String[]::new));
+        	JTextField orario = new JTextField();
+        	JTextField velocita = new JTextField();
+
+        	Object[] fields = {
+        			"Codice:", codice,
+        			"Partenza:", partenza,
+        			"Destinazione:", destinazione,
+        			"Orario:", orario,
+        			"Velocità:", velocita
+        	};
+        	int res = JOptionPane.showConfirmDialog(this, fields, "Nuovo Volo", JOptionPane.OK_CANCEL_OPTION);
+        	if (res == JOptionPane.OK_OPTION) {
+        		try {
+        			voloService.creaVolo(
+                        codice.getText().trim(),
+                        partenza.getSelectedItem().toString(),
+                        destinazione.getSelectedItem().toString(),
+                        Double.parseDouble(orario.getText().trim()),
+                        Double.parseDouble(velocita.getText().trim())
+        			);
+        			aggiornaTabella();
+        			JOptionPane.showMessageDialog(this, "Volo aggiunto!");
+        		} catch (Exception ex) {
+        			JOptionPane.showMessageDialog(this, "Errore: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+        		}
+        	}
+        });
+        
+        // Listener cancella volo
+        delBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Seleziona un volo da eliminare.");
+                return;
+            }
+            String codice = model.getValueAt(row, 0).toString();
+            int conf = JOptionPane.showConfirmDialog(this, "Sicuro di eliminare il volo " + codice + "?", "Conferma", JOptionPane.YES_NO_OPTION);
+            if (conf == JOptionPane.YES_OPTION) {
+                if (voloService.rimuoviVolo(codice)) {
+                    aggiornaTabella();
+                    JOptionPane.showMessageDialog(this, "Volo eliminato.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Errore durante la cancellazione.", "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        
+        // Listener per modifica di ritardo e stato di un volo
+        statoBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Seleziona un volo.");
+                return;
+            }
+            String codice = model.getValueAt(row, 0).toString();
+            Volo v;
+            try {
+                v = voloService.cercaVolo(codice);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Volo non trovato.", "Errore", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            JTextField ritardo = new JTextField("" + v.getRitardo());
+            JComboBox<Volo.StatoVolo> stato = new JComboBox<>(Volo.StatoVolo.values());
+            stato.setSelectedItem(v.getStato());
+
+            Object[] fields = {
+                    "Ritardo (minuti):", ritardo,
+                    "Stato:", stato
+            };
+            int res = JOptionPane.showConfirmDialog(this, fields, "Modifica stato/ritardo volo", JOptionPane.OK_CANCEL_OPTION);
+            if (res == JOptionPane.OK_OPTION) {
+                try {
+                    double nuovoRitardo = Double.parseDouble(ritardo.getText().trim());
+                    v.setRitardo(nuovoRitardo);
+                    v.setStato((Volo.StatoVolo) stato.getSelectedItem());
+                    aggiornaTabella();
+                    JOptionPane.showMessageDialog(this, "Modifiche effettuate!");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Errore: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        // Listener per notifiche a passeggeri di un volo
+        notifyBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Seleziona un volo.");
+                return;
+            }
+            String codice = model.getValueAt(row, 0).toString();
+            JTextArea msg = new JTextArea(6, 40);
+            int res = JOptionPane.showConfirmDialog(this, new JScrollPane(msg), "Messaggio da inviare agli utenti del volo " + codice, JOptionPane.OK_CANCEL_OPTION);
+            if (res == JOptionPane.OK_OPTION) {
+                JOptionPane.showMessageDialog(this, "Notifica inviata agli utenti del volo " + codice + ":\n\n" + msg.getText());
+            }
+        });
 
         aggiornaTabella();
     }
@@ -73,110 +171,10 @@ public class StaffVoloPanel extends JPanel {
                     v.getPartenza().getCodice(),
                     v.getDestinazione().getCodice(),
                     v.getOrarioPartenza(),
-                    v.getRitardo(),
+                    (v.getRitardo() <= 2) ? (v.getRitardo()) : "CANCELLATO",
                     v.getPistaAssegnata(),
                     (v.getStato() != null ? v.getStato().name() : "")
             });
-        }
-    }
-
-    private void aggiungiVolo() {
-        JTextField codice = new JTextField();
-        JComboBox<String> partenza = new JComboBox<>(aeroportoService.getTuttiAeroporti().stream().map(Aeroporto::getCodice).toArray(String[]::new));
-        JComboBox<String> destinazione = new JComboBox<>(aeroportoService.getTuttiAeroporti().stream().map(Aeroporto::getCodice).toArray(String[]::new));
-        JTextField orario = new JTextField();
-        JTextField velocita = new JTextField();
-
-        Object[] fields = {
-                "Codice:", codice,
-                "Partenza:", partenza,
-                "Destinazione:", destinazione,
-                "Orario:", orario,
-                "Velocità:", velocita
-        };
-        int res = JOptionPane.showConfirmDialog(this, fields, "Nuovo Volo", JOptionPane.OK_CANCEL_OPTION);
-        if (res == JOptionPane.OK_OPTION) {
-            try {
-                voloService.creaVolo(
-                        codice.getText().trim(),
-                        partenza.getSelectedItem().toString(),
-                        destinazione.getSelectedItem().toString(),
-                        Double.parseDouble(orario.getText().trim()),
-                        Double.parseDouble(velocita.getText().trim())
-                );
-                aggiornaTabella();
-                JOptionPane.showMessageDialog(this, "Volo aggiunto!");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Errore: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    private void eliminaVolo() {
-        int row = table.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Seleziona un volo da eliminare.");
-            return;
-        }
-        String codice = model.getValueAt(row, 0).toString();
-        int conf = JOptionPane.showConfirmDialog(this, "Sicuro di eliminare il volo " + codice + "?", "Conferma", JOptionPane.YES_NO_OPTION);
-        if (conf == JOptionPane.YES_OPTION) {
-            if (voloService.rimuoviVolo(codice)) {
-                aggiornaTabella();
-                JOptionPane.showMessageDialog(this, "Volo eliminato.");
-            } else {
-                JOptionPane.showMessageDialog(this, "Errore durante la cancellazione.", "Errore", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    private void statoRitardo() {
-        int row = table.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Seleziona un volo.");
-            return;
-        }
-        String codice = model.getValueAt(row, 0).toString();
-        Volo v;
-        try {
-            v = voloService.cercaVolo(codice);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Volo non trovato.", "Errore", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        JTextField ritardo = new JTextField("" + v.getRitardo());
-        JComboBox<Volo.StatoVolo> stato = new JComboBox<>(Volo.StatoVolo.values());
-        stato.setSelectedItem(v.getStato());
-
-        Object[] fields = {
-                "Ritardo (minuti):", ritardo,
-                "Stato:", stato
-        };
-        int res = JOptionPane.showConfirmDialog(this, fields, "Modifica stato/ritardo volo", JOptionPane.OK_CANCEL_OPTION);
-        if (res == JOptionPane.OK_OPTION) {
-            try {
-                double nuovoRitardo = Double.parseDouble(ritardo.getText().trim());
-                v.setRitardo(nuovoRitardo);
-                v.setStato((Volo.StatoVolo) stato.getSelectedItem());
-                aggiornaTabella();
-                JOptionPane.showMessageDialog(this, "Modifiche effettuate!");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Errore: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    private void notificaUtenti() {
-        int row = table.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Seleziona un volo.");
-            return;
-        }
-        String codice = model.getValueAt(row, 0).toString();
-        JTextArea msg = new JTextArea(6, 40);
-        int res = JOptionPane.showConfirmDialog(this, new JScrollPane(msg), "Messaggio da inviare agli utenti del volo " + codice, JOptionPane.OK_CANCEL_OPTION);
-        if (res == JOptionPane.OK_OPTION) {
-            JOptionPane.showMessageDialog(this, "Notifica inviata agli utenti del volo " + codice + ":\n\n" + msg.getText());
         }
     }
 }

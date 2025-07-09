@@ -60,22 +60,40 @@ public class VoloService {
             throw new IllegalArgumentException("Aeroporto di partenza o destinazione non trovato");
         }
         
-        // Trova la prima pista libera nell'aeroporto di partenza
-        int pistaLibera = -1;
+        // Trova la prima pista libera nell'aeroporto di partenza in quell'orario
+        int pistaLiberaPartenza = -1;
         for (int i = 0; i < partenza.getNumeroPiste(); i++) {
             if (partenza.getPiste()[i] == null) {
-                pistaLibera = i;
+                pistaLiberaPartenza = i;
+                break;
+            }
+        }
+        
+        // Trova la prima pista libera nell'aeroporto di destinazione in quell'orario
+        int pistaLiberaDestinazione = -1;
+        for (int i = 0; i < destinazione.getNumeroPiste(); i++) {
+            if (destinazione.getPiste()[i] == null) {
+            	pistaLiberaDestinazione= i;
                 break;
             }
         }
         
         Volo volo;
-        if (pistaLibera != -1) {
-            volo = new Volo(codice, partenza, destinazione, orario, velocita, pistaLibera, 0, Volo.StatoVolo.PROGRAMMATO);
-            partenza.occupaPista(pistaLibera, volo); // Aggiorna lo stato in memoria
+        if (pistaLiberaPartenza != -1) {
+        	if (pistaLiberaDestinazione != -1) {
+        		volo = new Volo(codice, partenza, destinazione, orario, velocita, pistaLiberaPartenza, 0, Volo.StatoVolo.PROGRAMMATO);
+                partenza.occupaPista(pistaLiberaPartenza, volo); // Aggiorna lo stato in memoria
+                destinazione.occupaPista(pistaLiberaDestinazione, volo); // Aggiorna lo stato in memoria
+        	} else {
+                // Nessuna pista libera a destinazione: stato IN_VOLO e calcolo ritardo
+                volo = new Volo(codice, partenza, destinazione, orario, velocita, pistaLiberaPartenza, 0, Volo.StatoVolo.PROGRAMMATO);
+                volo.setRitardo(volo.calcolaRitardo());
+                partenza.occupaPista(pistaLiberaPartenza, volo); // Aggiorna lo stato in memoria
+        	}
         } else {
-            // Nessuna pista libera: stato IN_ATTESA e calcolo ritardo
-            volo = new Volo(codice, partenza, destinazione, orario, velocita, -1, 0, Volo.StatoVolo.IN_ATTESA);
+            // Nessuna pista libera in partenza: stato IN_ATTESA e calcolo ritardo
+            volo = new Volo(codice, partenza, destinazione, orario, velocita, -1, 0, Volo.StatoVolo.PROGRAMMATO);
+            volo.setRitardo(volo.calcolaRitardo());
         }
 
         if (!voloDao.aggiungiVolo(volo)) {

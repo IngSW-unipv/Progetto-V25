@@ -1,8 +1,12 @@
 package it.unipv.ingsfw.aerotrack.services;
 
+import it.unipv.ingsfw.aerotrack.dao.DBConnection;
 import it.unipv.ingsfw.aerotrack.dao.PasseggeroDao;
 import it.unipv.ingsfw.aerotrack.models.Passeggero;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 public class PasseggeroService {
@@ -18,6 +22,16 @@ public class PasseggeroService {
             return false; // già presente
         }
         return passeggeroDao.aggiungiPasseggero(passeggero);
+    }
+    
+    public void svuotaPasseggeri() {
+        try (Connection conn = DBConnection.startConnection("aerotrack");
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("DELETE FROM passeggeri");
+            System.out.println("Tabella passeggeri svuotata.");
+        } catch (SQLException e) {
+            System.err.println("Errore durante lo svuotamento della tabella passeggeri: " + e.getMessage());
+        }
     }
 
     /**

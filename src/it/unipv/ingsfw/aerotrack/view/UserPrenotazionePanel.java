@@ -14,14 +14,14 @@ import java.util.List;
 /**
  * Pannello Swing per la gestione delle prenotazioni.
  */
-public class PrenotazionePanel extends JPanel {
+public class UserPrenotazionePanel extends JPanel {
     private final PrenotazioneService prenotazioneService;
     private final DefaultTableModel tableModel;
     private final JTable table;
     private final String codiceFiscaleUtente;
 
     // COSTRUTTORE CHE ACCETTA CODICE FISCALE
-    public PrenotazionePanel(String codiceFiscaleUtente) {
+    public UserPrenotazionePanel(String codiceFiscaleUtente) {
         this.codiceFiscaleUtente = codiceFiscaleUtente;
         this.prenotazioneService = PrenotazioneService.getInstance();
         setLayout(new BorderLayout());

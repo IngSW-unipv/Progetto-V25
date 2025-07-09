@@ -18,19 +18,24 @@ public class Main {
         // SVUOTA TUTTE LE TABELLE per test pulito
         prenotazioneService.svuotaPrenotazioni();
         voloService.svuotaVoli();
-        aeroportoService.svuotaAeroporti();
+
         
         // Creo aeroporti di test
         aeroportoService.aggiungiAeroporto("MXP", "Milano Malpensa", 45.63, 8.72, 2);
         aeroportoService.aggiungiAeroporto("FCO", "Roma Fiumicino", 41.80, 12.24, 4);
+        aeroportoService.aggiungiAeroporto("LIN", "Milano Linate", 45.45, 9.27, 3);
+        aeroportoService.aggiungiAeroporto("NAP", "Napoli Capodichino", 40.88, 14.29, 2);
 
         System.out.println("Aeroporti registrati:");
         for (Aeroporto a : aeroportoService.getTuttiAeroporti()) {
             System.out.println(a);
         }
 
-        // Creo un volo tra MXP e FCO
+        // Creo voli di test
         voloService.creaVolo("AZ123", "MXP", "FCO", 12.45, 850);
+        voloService.creaVolo("AZ124", "FCO", "MXP", 15.0, 900);
+        voloService.creaVolo("AZ125", "MXP", "FCO", 18.30, 800);
+        voloService.creaVolo("AZ126", "LIN", "NAP", 12.45, 850);
 
         System.out.println("\nVoli registrati:");
         for (Volo v : voloService.getTuttiVoli()) {

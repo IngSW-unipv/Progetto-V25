@@ -22,7 +22,6 @@ public class Volo {
         ATTERRATO,      // Volo arrivato a destinazione
         CANCELLATO,     // Volo cancellato
         RITARDATO,      // Volo in ritardo
-        IN_ATTESA       // Tutte le piste sono occupate
     }
     
     // Attributi  
@@ -62,20 +61,31 @@ public class Volo {
         this.orarioPartenza = orarioPartenza;
         this.velocita = velocita;
         this.prenotazioni = new ArrayList<>();
-        this.ritardo = 0;                        
+        this.ritardo = 0;     
+        this.pistaAssegnata = -1;
         
         // Aggiorna le liste degli aeroporti
         partenza.aggiungiVoloInPartenza(this);
         destinazione.aggiungiVoloInArrivo(this);
         
+
+         // Assegna una pista libera e cambia lo stato in PROGRAMMATO
+     	for (int i = 0; i < partenza.getNumeroPiste(); i++) {
+             if (partenza.getPiste()[i] == null) {
+                 partenza.occupaPista(i, this);
+                 this.pistaAssegnata = i;
+                 this.stato = StatoVolo.PROGRAMMATO;
+                 break;
+             }    
+         }
+     	
+     	for (int i = 0; i < destinazione.getNumeroPiste(); i++) {
+             if (destinazione.getPiste()[i] == null) {
+                 destinazione.occupaPista(i, this);
+                 break;
+             }    
+         }
         
-        
-        
-        //in caso tutte le piste siano occupate
-        if (pistaAssegnata==-1) {
-            this.ritardo = calcolaRitardo();
-            this.stato = StatoVolo.IN_ATTESA;
-        }
     }
 	
     /**
@@ -211,25 +221,6 @@ public class Volo {
             prenotazioni.add(p);	
         }
     }
-    
-    /**
-    *  Assegna una pista libera e cambia lo stato in PROGRAMMATO
-    **/
-    public int trovaPista() {
-        int pista=-1;
-    	for (int i = 0; i < partenza.getNumeroPiste(); i++) {
-            if (partenza.getPiste()[i] == null) {
-                partenza.occupaPista(i, this);
-                pista= i;
-                this.stato = StatoVolo.PROGRAMMATO;
-                break;
-            }    
-        }
-        
-        return pista;
-        
-    }
-
 	   
     /**
      * Cancella una prenotazione basandosi sul documento del passeggero.
@@ -268,6 +259,21 @@ public class Volo {
     public double calcolaTempo() {
         return (getDistanzaKm() / velocita) + ritardo;
     }
+    
+    /**
+     * Restituisce lo stato in base all'orario fornito.
+     * 
+     * @return Stato del volo
+     */
+    public StatoVolo calcolaStato(double orario) {
+    	if(orario <= orarioPartenza)  this.stato = StatoVolo.PROGRAMMATO;
+    	if(orario > orarioPartenza  && orario < orarioPartenza + ritardo)  this.stato = StatoVolo.RITARDATO;
+    	if(orario >= orarioPartenza + ritardo && orario < orarioPartenza + ritardo + 0.1)  this.stato = StatoVolo.IN_PARTENZA;
+    	if(orario >= orarioPartenza + ritardo + 0.1 && orario < orarioPartenza + ritardo + 0.1 + this.calcolaTempo())  this.stato = StatoVolo.IN_VOLO;
+    	if(orario >=  orarioPartenza + ritardo + 0.1 + this.calcolaTempo())  this.stato = StatoVolo.ATTERRATO;
+    	return stato;
+    }
+    
 	
     /**
      * Calcola il ritardo basandosi sui voli che occupano le piste.

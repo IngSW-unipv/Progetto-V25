@@ -81,8 +81,8 @@ public class UserFrame extends JFrame {
         tabbedPane.addTab("Benvenuto", iconWelcome, welcomePanel);
         
         // COSTRUTTORE: passa codice fiscale utente
-        PrenotazionePanel prenotazionePanel = new PrenotazionePanel(codiceFiscaleUtente); 
-        VoloPanel voloPanel = new VoloPanel(prenotazionePanel);        
+        UserPrenotazionePanel prenotazionePanel = new UserPrenotazionePanel(codiceFiscaleUtente); 
+        UserVoloPanel voloPanel = new UserVoloPanel(prenotazionePanel, codiceFiscaleUtente);        
 
         addIconBanner(voloPanel, "/img/flight_banner.jpg", "Voli AeroTrack", titleFont);
         addIconBanner(prenotazionePanel, "/img/booking_banner.jpg", "Le tue Prenotazioni", titleFont);
