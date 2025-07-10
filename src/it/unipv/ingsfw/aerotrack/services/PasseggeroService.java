@@ -25,13 +25,18 @@ public class PasseggeroService {
     }
     
     /**
-     * Aggiunge un nuovo passeggero se non esiste già.
-     * @param passeggero Il passeggero da aggiungere.
-     * @return true se aggiunto, false se già presente.
+     * Aggiunge un nuovo passeggero o aggiorna i dati se già presente.
+     * @param passeggero Il passeggero da aggiungere o aggiornare.
+     * @return true se aggiunto o aggiornato, false se errore.
      */
     public boolean aggiungiPasseggero(Passeggero passeggero) {
-        if (passeggeroDao.cercaPerDocumento(passeggero.getDocumento()) != null) {
-            return false; // già presente
+    	Passeggero esistente = passeggeroDao.cercaPerDocumento(passeggero.getDocumento());
+        if (esistente != null) {
+            if (!esistente.getNome().equals(passeggero.getNome()) ||
+                !esistente.getCognome().equals(passeggero.getCognome())) {
+                return passeggeroDao.aggiornaPasseggero(passeggero);
+            }
+            return true;
         }
         return passeggeroDao.aggiungiPasseggero(passeggero);
     }

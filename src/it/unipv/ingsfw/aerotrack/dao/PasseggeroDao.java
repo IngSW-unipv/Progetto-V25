@@ -36,10 +36,31 @@ public class PasseggeroDao implements IPasseggeroDao {
             ps.setString(3, passeggero.getCognome());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("Errore inserimento passeggero: " + e.getMessage());
+        	// Se già esistente, aggiorna!
+            return aggiornaPasseggero(passeggero);
+        }
+    }
+    
+    /**
+     * Aggiorna nome e cognome di un passeggero esistente.
+     */
+    public boolean aggiornaPasseggero(Passeggero passeggero) {
+        String updateQuery = """
+            UPDATE passeggeri SET nome = ?, cognome = ?
+            WHERE documento = ?
+            """;
+        try (Connection conn = DBConnection.startConnection("aerotrack");
+             PreparedStatement ps = conn.prepareStatement(updateQuery)) {
+            ps.setString(1, passeggero.getNome());
+            ps.setString(2, passeggero.getCognome());
+            ps.setString(3, passeggero.getDocumento());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Errore aggiornamento passeggero: " + e.getMessage());
             return false;
         }
     }
+
 
     @Override
     public Passeggero cercaPerDocumento(String documento) {
