@@ -136,10 +136,13 @@ public class StaffVoloPanel extends JPanel {
             if (res == JOptionPane.OK_OPTION) {
                 try {
                     double nuovoRitardo = Double.parseDouble(ritardo.getText().trim());
-                    v.setRitardo(nuovoRitardo);
-                    v.setStato((Volo.StatoVolo) stato.getSelectedItem());
-                    aggiornaTabella();
-                    JOptionPane.showMessageDialog(this, "Modifiche effettuate!");
+                    if (voloService.aggiornaStatoERitardo(codice, nuovoRitardo, (Volo.StatoVolo) stato.getSelectedItem())) {
+                        aggiornaTabella();
+                        JOptionPane.showMessageDialog(this, "Modifiche effettuate!");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Errore durante l'aggiornamento.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    }
+
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "Errore: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }

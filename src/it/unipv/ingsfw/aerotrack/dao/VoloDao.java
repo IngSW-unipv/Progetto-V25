@@ -116,6 +116,23 @@ public class VoloDao implements IVoloDao {
         return listaVoli;
     }
 
+    public boolean aggiornaVolo(Volo volo) {
+        String query = "UPDATE voli SET ritardo = ?, stato = ? WHERE codice = ?";
+        try (Connection conn = DBConnection.startConnection("aerotrack");
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setDouble(1, volo.getRitardo());
+            stmt.setString(2, volo.getStato().name());
+            stmt.setString(3, volo.getCodice());
+
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    
     /**
      * Cerca un volo tramite codice.
      * 

@@ -100,6 +100,23 @@ public class VoloService {
             throw new RuntimeException("Errore nell'inserimento del volo");
         }
     }
+    
+    
+    /**
+     * Aggiorna lo stato e il ritardo di un volo con i valori dati.
+     */
+    public boolean aggiornaStatoERitardo(String codice, double ritardo, Volo.StatoVolo stato) {
+        Volo v = voloDao.cercaPerCodice(codice);
+        if (v == null) {
+            throw new VoloNonTrovatoException(codice);
+        }
+
+        v.setRitardo(ritardo);
+        v.setStato(stato);
+
+        return voloDao.aggiornaVolo(v);
+    }
+
      
     /**
      * Cerca un volo per codice.

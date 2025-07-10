@@ -1,6 +1,7 @@
 package it.unipv.ingsfw.aerotrack.services;
 
 import java.sql.Connection;
+
 import java.sql.SQLException;
 import java.util.List;
 import java.sql.Statement;
@@ -77,6 +78,19 @@ public class PrenotazioneService {
         boolean ok = prenotazioneDao.aggiungiPrenotazione(prenotazione);
         if (!ok) throw new RuntimeException("Errore nel salvataggio della prenotazione su database");
     }
+    
+    /**
+     * aggiorna lo stato della prenotazione.
+     */
+    public void aggiornaPrenotazione(Prenotazione p) {
+        try {
+            prenotazioneDao.aggiorna(p);
+        } catch (SQLException e) {
+            throw new RuntimeException("Errore aggiornamento prenotazione", e);
+        }
+    }
+
+
     
     /**
      * Restituisce tutte le prenotazioni.

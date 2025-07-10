@@ -34,11 +34,21 @@ public class StaffPrenotazionePanel extends JPanel {
         searchField = new JTextField(20);
         searchPanel.add(searchField);
         add(searchPanel, BorderLayout.NORTH);
+       
+        // Bottoni
+        JPanel buttonPanel = new JPanel();
+        JButton aggiornaBtn = new JButton("Aggiorna");
+
+        buttonPanel.add(aggiornaBtn);
+        add(buttonPanel, BorderLayout.SOUTH);
 
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) { aggiornaTabella(); }
         });
+        
+        // Listener aggiorna
+        aggiornaBtn.addActionListener(e -> aggiornaTabella());
 
         aggiornaTabella();
     }

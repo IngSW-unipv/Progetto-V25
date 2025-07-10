@@ -49,6 +49,15 @@ public class PrenotazioneDao implements IPrenotazioneDao {
             return false;
         }
     }
+    
+    public void aggiorna(Prenotazione p) throws SQLException {
+    	try (Connection conn = DBConnection.startConnection("aerotrack");
+    		     PreparedStatement stmt = conn.prepareStatement("UPDATE prenotazioni SET cancellata=? WHERE codice_prenotazione=?")) {
+    		    stmt.setBoolean(1, p.isCancellata());
+    		    stmt.setString(2, p.getCodicePrenotazione());
+    		    stmt.executeUpdate();
+    		};
+    }
 
     /**
      * Restituisce tutte le prenotazioni.
