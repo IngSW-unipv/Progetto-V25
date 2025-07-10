@@ -10,8 +10,20 @@ import java.sql.Statement;
 import java.util.List;
 
 public class PasseggeroService {
-    private final PasseggeroDao passeggeroDao = PasseggeroDao.getInstance();
+	private static PasseggeroService instance; 
+	private final PasseggeroDao passeggeroDao = PasseggeroDao.getInstance();
 
+	// costruttore privato
+    private PasseggeroService() {}
+
+    // metodo statico per ottenere l'istanza singleton
+    public static PasseggeroService getInstance() {
+        if (instance == null) {
+            instance = new PasseggeroService();
+        }
+        return instance;
+    }
+    
     /**
      * Aggiunge un nuovo passeggero se non esiste già.
      * @param passeggero Il passeggero da aggiungere.

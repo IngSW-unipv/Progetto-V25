@@ -3,6 +3,8 @@ package it.unipv.ingsfw.aerotrack.test;
 import it.unipv.ingsfw.aerotrack.models.*;
 import it.unipv.ingsfw.aerotrack.services.*;
 
+import java.util.List;
+
 /**
  * Test manuale: crea aeroporti e voli, stampa su console lo stato del sistema.
  * Utile per debug e verifica veloce da linea di comando.
@@ -14,10 +16,12 @@ public class Main {
         AeroportoService aeroportoService = AeroportoService.getInstance();
         VoloService voloService = VoloService.getInstance();
         PrenotazioneService prenotazioneService = PrenotazioneService.getInstance();
+        PasseggeroService passeggeroService = PasseggeroService.getInstance();
 
         // SVUOTA TUTTE LE TABELLE per test pulito
         prenotazioneService.svuotaPrenotazioni();
         voloService.svuotaVoli();
+        passeggeroService.svuotaPasseggeri(); 
 
         
         // Creo aeroporti di test
@@ -41,9 +45,42 @@ public class Main {
         for (Volo v : voloService.getTuttiVoli()) {
             System.out.println(v);
         }
+        
+        // Aggiungi prenotazioni di test
+        prenotazioneService.creaPrenotazione("Chiara", "Viale", "ABC123", "AZ123");
+        prenotazioneService.creaPrenotazione("Davide", "Bozzola", "DEF456", "AZ123");
+        prenotazioneService.creaPrenotazione("Paolo", "Palmero", "GHI789", "AZ124");
+
+
+        // Ricarica le prenotazioni e associa ai voli 
+        List<Volo> voli = voloService.getTuttiVoli();
+        List<Prenotazione> prenotazioni = prenotazioneService.getTuttePrenotazioni();
+        for (Prenotazione p : prenotazioni) {
+            if (p.getVolo() != null) {
+                for (Volo v : voli) {
+                    if (v.getCodice().equals(p.getVolo().getCodice())) {
+                        v.aggiungiPrenotazione(p);
+                        break;
+                    }
+                }
+            }
+        }
+
+        System.out.println("\nVoli registrati:");
+        for (Volo v : voli) {
+            System.out.println(v);
+        }
 
         // Test ricerca
         Volo v = voloService.cercaVolo("AZ123");
-        System.out.println("\nDettagli volo trovato: " + v);
+        if (v != null) {
+            // aggiorna le prenotazioni anche dell'oggetto trovato
+            for (Prenotazione p : prenotazioni) {
+                if (p.getVolo() != null && v.getCodice().equals(p.getVolo().getCodice())) {
+                    v.aggiungiPrenotazione(p);
+                }
+            }
+            System.out.println("\nDettagli volo trovato: " + v);
+        }
     }
 }

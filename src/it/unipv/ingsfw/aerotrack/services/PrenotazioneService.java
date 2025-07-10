@@ -17,7 +17,7 @@ public class PrenotazioneService {
 	private static PrenotazioneService instance;
 	private final PrenotazioneDao prenotazioneDao;
     private final VoloDao voloDao;
-    private final PasseggeroService passeggeroService = new PasseggeroService();
+    private final PasseggeroService passeggeroService = PasseggeroService.getInstance();
     
     private PrenotazioneService() {
         this.prenotazioneDao = PrenotazioneDao.getInstance();
