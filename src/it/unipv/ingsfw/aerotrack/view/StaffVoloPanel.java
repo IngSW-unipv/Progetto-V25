@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 public class StaffVoloPanel extends JPanel {
@@ -23,7 +25,7 @@ public class StaffVoloPanel extends JPanel {
         aeroportoService = AeroportoService.getInstance();
 
         model = new DefaultTableModel(
-                new Object[]{"Codice", "Partenza", "Destinazione", "Orario", "Ritardo", "Pista", "Stato"}, 0
+                new Object[]{"Codice", "Partenza", "Destinazione", "Orario", "Data", "Ritardo", "Pista", "Stato"}, 0
         ) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -33,7 +35,7 @@ public class StaffVoloPanel extends JPanel {
             @Override
             public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
                 Component c = super.prepareRenderer(renderer, row, col);
-                Object pistaObj = getValueAt(row, 5);
+                Object pistaObj = getValueAt(row, 6);
                 if (pistaObj == null || pistaObj.toString().equals("-1"))
                     c.setBackground(new Color(255, 130, 130));
                 else
@@ -64,23 +66,27 @@ public class StaffVoloPanel extends JPanel {
         	JComboBox<String> destinazione = new JComboBox<>(aeroportoService.getTuttiAeroporti().stream().map(Aeroporto::getCodice).toArray(String[]::new));
         	JTextField orario = new JTextField();
         	JTextField velocita = new JTextField();
+        	JTextField data = new JTextField(LocalDate.now().toString());
 
         	Object[] fields = {
         			"Codice:", codice,
         			"Partenza:", partenza,
         			"Destinazione:", destinazione,
         			"Orario:", orario,
-        			"Velocità:", velocita
+        			"Velocità:", velocita,
+        			"Data (YYYY-MM-DD):", data
         	};
         	int res = JOptionPane.showConfirmDialog(this, fields, "Nuovo Volo", JOptionPane.OK_CANCEL_OPTION);
         	if (res == JOptionPane.OK_OPTION) {
         		try {
+        			LocalDate dataVolo = LocalDate.parse(data.getText().trim());
         			voloService.creaVolo(
                         codice.getText().trim(),
                         partenza.getSelectedItem().toString(),
                         destinazione.getSelectedItem().toString(),
                         Double.parseDouble(orario.getText().trim()),
-                        Double.parseDouble(velocita.getText().trim())
+                        Double.parseDouble(velocita.getText().trim()),
+                        dataVolo
         			);
         			aggiornaTabella();
         			JOptionPane.showMessageDialog(this, "Volo aggiunto!");
@@ -127,15 +133,18 @@ public class StaffVoloPanel extends JPanel {
             JTextField ritardo = new JTextField("" + v.getRitardo());
             JComboBox<Volo.StatoVolo> stato = new JComboBox<>(Volo.StatoVolo.values());
             stato.setSelectedItem(v.getStato());
+            JTextField dataField = new JTextField(v.getDataVolo().toString());
 
             Object[] fields = {
                     "Ritardo (minuti):", ritardo,
-                    "Stato:", stato
+                    "Stato:", stato,
+                    "Data (YYYY-MM-DD):", dataField
             };
             int res = JOptionPane.showConfirmDialog(this, fields, "Modifica stato/ritardo volo", JOptionPane.OK_CANCEL_OPTION);
             if (res == JOptionPane.OK_OPTION) {
                 try {
                     double nuovoRitardo = Double.parseDouble(ritardo.getText().trim());
+                    LocalDate nuovaData = LocalDate.parse(dataField.getText().trim());
                     if (voloService.aggiornaStatoERitardo(codice, nuovoRitardo, (Volo.StatoVolo) stato.getSelectedItem())) {
                         aggiornaTabella();
                         JOptionPane.showMessageDialog(this, "Modifiche effettuate!");
@@ -167,16 +176,23 @@ public class StaffVoloPanel extends JPanel {
     }
 
     private void aggiornaTabella() {
+    	LocalTime now = LocalTime.now();
+        double orarioReale = now.getHour() + now.getMinute() / 60.0;
+        for (Volo v : voloService.getTuttiVoli()) {
+            v.aggiornaStatoECalcolaRitardo(orarioReale);
+            voloService.aggiornaStatoERitardo(v.getCodice(), v.getRitardo(), v.getStato());
+        }
         model.setRowCount(0);
         for (Volo v : voloService.getTuttiVoli()) {
             model.addRow(new Object[]{
-                    v.getCodice(),
-                    v.getPartenza().getCodice(),
-                    v.getDestinazione().getCodice(),
-                    v.getOrarioPartenza(),
-                    (v.getRitardo() <= 2) ? (v.getRitardo()) : "CANCELLATO",
-                    v.getPistaAssegnata(),
-                    (v.getStato() != null ? v.getStato().name() : "")
+                v.getCodice(),
+                v.getPartenza().getCodice(),
+                v.getDestinazione().getCodice(),
+                v.getOrarioPartenza(),
+                v.getDataVolo(),
+                (v.getRitardo() > 0 ? v.getRitardo() : " "),
+                (v.getPistaAssegnata() >= 0 ? v.getPistaAssegnata() + 1 : "-"),
+                (v.getStato() != null ? v.getStato().name() : "")
             });
         }
     }

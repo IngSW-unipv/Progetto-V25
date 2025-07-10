@@ -25,18 +25,21 @@ public class PasseggeroService {
     }
     
     /**
-     * Aggiunge un nuovo passeggero o aggiorna i dati se già presente.
-     * @param passeggero Il passeggero da aggiungere o aggiornare.
-     * @return true se aggiunto o aggiornato, false se errore.
+     * Aggiunge un nuovo passeggero se non esiste già.
+     * Se esiste già, controlla che nome e cognome coincidano.
+     * Se non coincidono, blocca la prenotazione.
+     * @param passeggero Il passeggero da aggiungere.
+     * @return true se aggiunto, false se già presente.
      */
     public boolean aggiungiPasseggero(Passeggero passeggero) {
     	Passeggero esistente = passeggeroDao.cercaPerDocumento(passeggero.getDocumento());
         if (esistente != null) {
             if (!esistente.getNome().equals(passeggero.getNome()) ||
                 !esistente.getCognome().equals(passeggero.getCognome())) {
-                return passeggeroDao.aggiornaPasseggero(passeggero);
+            	throw new IllegalArgumentException("Il codice fiscale risulta già associato a un'altra persona (" +
+                        esistente.getNome() + " " + esistente.getCognome() + "). Impossibile procedere.");
             }
-            return true;
+            return false; // già presente, dati coincidono
         }
         return passeggeroDao.aggiungiPasseggero(passeggero);
     }

@@ -7,6 +7,7 @@ import it.unipv.ingsfw.aerotrack.services.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.time.LocalTime;
 import java.util.List;
 
 public class UserVoloPanel extends JPanel {
@@ -156,8 +157,13 @@ public class UserVoloPanel extends JPanel {
     }
 
     private void aggiornaTabella() {
+    	// Calcola l'orario reale attuale
+        LocalTime now = LocalTime.now();
+        double orarioReale = now.getHour() + now.getMinute() / 60.0;
+
         tableModel.setRowCount(0);
         for (Volo v : voloService.getTuttiVoli()) {
+            v.aggiornaStatoECalcolaRitardo(orarioReale); // aggiorna stato e ritardo
             tableModel.addRow(new Object[]{
                 v.getCodice(),
                 v.getPartenza().getCodice(),

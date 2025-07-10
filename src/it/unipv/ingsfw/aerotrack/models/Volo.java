@@ -1,6 +1,8 @@
 package it.unipv.ingsfw.aerotrack.models;
 
 import it.unipv.ingsfw.aerotrack.utils.CalcolaDistanza;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -30,10 +32,12 @@ public class Volo {
     private final Aeroporto destinazione;
     private final double velocita;
     private final double orarioPartenza;
-    private final List<Prenotazione> prenotazioni;
+    private final List<Prenotazione> prenotazioni; 
     private double ritardo;
     private StatoVolo stato;
     private int pistaAssegnata;
+    private boolean pistaLiberata;
+    private final LocalDate dataVolo;
 	
 	
     /**
@@ -46,7 +50,7 @@ public class Volo {
      * @param orarioPartenza Orario programmato di partenza
      * @param velocita Velocità del volo
      */
-    public Volo(String codice, Aeroporto partenza, Aeroporto destinazione, double orarioPartenza, double velocita) {
+    public Volo(String codice, Aeroporto partenza, Aeroporto destinazione, double orarioPartenza, double velocita, LocalDate dataVolo) {
         if (codice == null || codice.isEmpty())
             throw new IllegalArgumentException("Codice volo null");
         if (partenza == null || destinazione == null)
@@ -60,9 +64,12 @@ public class Volo {
         this.destinazione = destinazione;
         this.orarioPartenza = orarioPartenza;
         this.velocita = velocita;
+        this.dataVolo = dataVolo;
         this.prenotazioni = new ArrayList<>();
         this.ritardo = 0;     
         this.pistaAssegnata = -1;
+        this.stato = StatoVolo.PROGRAMMATO;
+        this.pistaLiberata = false;
         
         // Aggiorna le liste degli aeroporti
         partenza.aggiungiVoloInPartenza(this);
@@ -74,7 +81,6 @@ public class Volo {
              if (partenza.getPiste()[i] == null) {
                  partenza.occupaPista(i, this);
                  this.pistaAssegnata = i;
-                 this.stato = StatoVolo.PROGRAMMATO;
                  break;
              }    
          }
@@ -92,7 +98,7 @@ public class Volo {
      * Costruttore secondario
      */
     public Volo(String codice, Aeroporto partenza, Aeroporto destinazione, double orarioPartenza, double velocita,
-                int pistaAssegnata, double ritardo, StatoVolo stato) {
+                int pistaAssegnata, double ritardo, StatoVolo stato, LocalDate dataVolo) {
         if (codice == null || codice.isEmpty())
             throw new IllegalArgumentException("Codice volo null");
         if (partenza == null || destinazione == null)
@@ -108,7 +114,8 @@ public class Volo {
         this.prenotazioni = new ArrayList<>();
         this.pistaAssegnata = pistaAssegnata;
         this.ritardo = ritardo;
-        this.stato = stato;
+        this.stato = stato != null ? stato : StatoVolo.PROGRAMMATO;
+        this.dataVolo = dataVolo;
     }
     
     /**
@@ -155,6 +162,11 @@ public class Volo {
     public double getRitardo() {
         return ritardo;
     }
+    
+    // Getter per la data
+    public LocalDate getDataVolo() {
+        return dataVolo;
+    }    
 	
     /**
      * Restituisce la lista delle prenotazioni del volo.
@@ -251,32 +263,15 @@ public class Volo {
     }
     
     /**
-     * Calcola il tempo totale di volo includendo eventuali ritardi.
-     * Formula: (distanza / velocità) + ritardo
-     * 
+     * Calcola il tempo totale di volo.
      * @return Tempo di volo in ore
      */
     public double calcolaTempo() {
-        return (getDistanzaKm() / velocita) + ritardo;
+        return (getDistanzaKm() / velocita);
     }
-    
-    /**
-     * Restituisce lo stato in base all'orario fornito.
-     * 
-     * @return Stato del volo
-     */
-    public StatoVolo calcolaStato(double orario) {
-    	if(orario <= orarioPartenza)  this.stato = StatoVolo.PROGRAMMATO;
-    	if(orario > orarioPartenza  && orario < orarioPartenza + ritardo)  this.stato = StatoVolo.RITARDATO;
-    	if(orario >= orarioPartenza + ritardo && orario < orarioPartenza + ritardo + 0.1)  this.stato = StatoVolo.IN_PARTENZA;
-    	if(orario >= orarioPartenza + ritardo + 0.1 && orario < orarioPartenza + ritardo + 0.1 + this.calcolaTempo())  this.stato = StatoVolo.IN_VOLO;
-    	if(orario >=  orarioPartenza + ritardo + 0.1 + this.calcolaTempo())  this.stato = StatoVolo.ATTERRATO;
-    	return stato;
-    }
-    
 	
     /**
-     * Calcola il ritardo basandosi sui voli che occupano le piste.
+     * Calcola il ritardo solo se la pista non è assegnata.
      * 
      * @return Ritardo calcolato in ore
      */
@@ -295,6 +290,81 @@ public class Volo {
             }
         }
         return minRitardo;
+    }
+    
+    /**
+     * Aggiorna lo stato del volo e libera la pista in base all'orario reale.
+     * @param orarioReale l'orario reale 
+     */
+    public void aggiornaStatoECalcolaRitardo(double orarioReale) {
+    	LocalDate oggi = LocalDate.now();
+    	
+    	if (isCancellato()) return;
+
+        // Se il volo è in futuro, stato = PROGRAMMATO e ritardo = 0
+        if (dataVolo.isAfter(oggi)) {
+            stato = StatoVolo.PROGRAMMATO;
+            ritardo = 0;
+            return;
+        }
+
+        // Se il volo è in passato, stato = ATTERRATO
+        if (dataVolo.isBefore(oggi)) {
+            stato = StatoVolo.ATTERRATO;
+            ritardo = 0;
+            return;
+        }
+
+        // Se la data è oggi, calcola in base all'orario
+        // Calcolo del ritardo SOLO se la pista non è libera
+        if (pistaAssegnata < 0) {
+            this.ritardo = calcolaRitardo();
+        } else {
+            this.ritardo = 0;// se la pista è libera il volo parte puntuale
+        }
+
+        double partenzaEffettiva = orarioPartenza + ritardo;
+
+        // Stato sequenziale
+        if (pistaAssegnata < 0 && ritardo > 0 && orarioReale >= orarioPartenza) {
+            stato = StatoVolo.RITARDATO;
+        } else if (orarioReale < partenzaEffettiva) {
+            stato = StatoVolo.PROGRAMMATO;
+        } else if (orarioReale >= partenzaEffettiva && orarioReale < partenzaEffettiva + 0.1) {
+            stato = StatoVolo.IN_PARTENZA;
+        } else if (orarioReale >= partenzaEffettiva + 0.1 && orarioReale < partenzaEffettiva + 0.1 + calcolaTempo()) {
+            stato = StatoVolo.IN_VOLO;
+        } else if (orarioReale >= partenzaEffettiva + 0.1 + calcolaTempo()) {
+            stato = StatoVolo.ATTERRATO;
+            // Libera la pista solo se assegnata e valida
+            if (!pistaLiberata 
+                && pistaAssegnata >= 0 
+                && pistaAssegnata < partenza.getNumeroPiste()
+                && pistaAssegnata < destinazione.getNumeroPiste()) {
+                partenza.liberaPista(pistaAssegnata);
+                destinazione.liberaPista(pistaAssegnata);
+                pistaLiberata = true;
+            }
+        }
+    }
+
+
+    /**
+     * Calcola lo stato rispetto a un orario fittizio (per ricerca, NON aggiorna campo stato!).
+     */
+    public StatoVolo calcolaStato(double orario) {
+        if (isCancellato()) return StatoVolo.CANCELLATO;
+        double partenzaEffettiva = orarioPartenza + ritardo;
+        if (orario < orarioPartenza) return StatoVolo.PROGRAMMATO;
+        if (orario >= orarioPartenza && orario < partenzaEffettiva) 
+        	return StatoVolo.RITARDATO;
+        if (orario >= partenzaEffettiva && orario < partenzaEffettiva + 0.1) 
+        	return StatoVolo.IN_PARTENZA;
+        if (orario >= partenzaEffettiva + 0.1 && orario < partenzaEffettiva + 0.1 + calcolaTempo()) 
+        	return StatoVolo.IN_VOLO;
+        if (orario >= partenzaEffettiva + 0.1 + calcolaTempo()) 
+        	return StatoVolo.ATTERRATO;
+        return stato;
     }
     
     /**

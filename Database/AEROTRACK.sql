@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS voli (
     pista_assegnata INT DEFAULT -1,
     ritardo DOUBLE DEFAULT 0,
     stato VARCHAR(20) DEFAULT 'PROGRAMMATO',
+    data_volo DATE NOT NULL,
     FOREIGN KEY(partenza) REFERENCES aeroporti(codice),
     FOREIGN KEY(destinazione) REFERENCES aeroporti(codice)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

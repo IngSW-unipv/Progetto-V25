@@ -3,6 +3,7 @@ package it.unipv.ingsfw.aerotrack.services;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import it.unipv.ingsfw.aerotrack.dao.*;
@@ -43,7 +44,7 @@ public class VoloService {
      * 
      * @throws IllegalArgumentException se i dati non sono validi
      */
-    public void creaVolo(String codice, String codicePartenza, String codiceDestinazione, double orario, double velocita) {
+    public void creaVolo(String codice, String codicePartenza, String codiceDestinazione, double orario, double velocita, LocalDate dataVolo) {
         // Validazioni
         if (codice == null || codice.isEmpty()) {
             throw new IllegalArgumentException("Codice volo non può essere vuoto");
@@ -53,6 +54,9 @@ public class VoloService {
         }
         if (velocita <= 0 || velocita > 1200) {
             throw new IllegalArgumentException("Velocità deve essere tra 1 e 1200 km/h");
+        }
+        if (dataVolo == null) {
+            throw new IllegalArgumentException("Data volo non può essere null");
         }
         Aeroporto partenza = aeroportoDao.cercaPerCodice(codicePartenza);
         Aeroporto destinazione = aeroportoDao.cercaPerCodice(codiceDestinazione);
@@ -81,18 +85,18 @@ public class VoloService {
         Volo volo;
         if (pistaLiberaPartenza != -1) {
         	if (pistaLiberaDestinazione != -1) {
-        		volo = new Volo(codice, partenza, destinazione, orario, velocita, pistaLiberaPartenza, 0, Volo.StatoVolo.PROGRAMMATO);
+        		volo = new Volo(codice, partenza, destinazione, orario, velocita, pistaLiberaPartenza, 0, Volo.StatoVolo.PROGRAMMATO, dataVolo);
                 partenza.occupaPista(pistaLiberaPartenza, volo); // Aggiorna lo stato in memoria
                 destinazione.occupaPista(pistaLiberaDestinazione, volo); // Aggiorna lo stato in memoria
         	} else {
                 // Nessuna pista libera a destinazione: stato IN_VOLO e calcolo ritardo
-                volo = new Volo(codice, partenza, destinazione, orario, velocita, pistaLiberaPartenza, 0, Volo.StatoVolo.PROGRAMMATO);
+                volo = new Volo(codice, partenza, destinazione, orario, velocita, pistaLiberaPartenza, 0, Volo.StatoVolo.PROGRAMMATO, dataVolo);
                 volo.setRitardo(volo.calcolaRitardo());
                 partenza.occupaPista(pistaLiberaPartenza, volo); // Aggiorna lo stato in memoria
         	}
         } else {
             // Nessuna pista libera in partenza: stato IN_ATTESA e calcolo ritardo
-            volo = new Volo(codice, partenza, destinazione, orario, velocita, -1, 0, Volo.StatoVolo.PROGRAMMATO);
+            volo = new Volo(codice, partenza, destinazione, orario, velocita, -1, 0, Volo.StatoVolo.PROGRAMMATO, dataVolo);
             volo.setRitardo(volo.calcolaRitardo());
         }
 

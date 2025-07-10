@@ -3,6 +3,7 @@ package it.unipv.ingsfw.aerotrack.test;
 import it.unipv.ingsfw.aerotrack.models.*;
 import it.unipv.ingsfw.aerotrack.services.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -26,24 +27,26 @@ public class Main {
         
         // Creo aeroporti di test
         aeroportoService.aggiungiAeroporto("MXP", "Milano Malpensa", 45.63, 8.72, 2);
-        aeroportoService.aggiungiAeroporto("FCO", "Roma Fiumicino", 41.80, 12.24, 4);
-        aeroportoService.aggiungiAeroporto("LIN", "Milano Linate", 45.45, 9.27, 3);
-        aeroportoService.aggiungiAeroporto("NAP", "Napoli Capodichino", 40.88, 14.29, 2);
+        aeroportoService.aggiungiAeroporto("FCO", "Roma Fiumicino", 41.80, 12.24, 3);
+        aeroportoService.aggiungiAeroporto("LIN", "Milano Linate", 45.45, 9.27, 1);
+        aeroportoService.aggiungiAeroporto("NAP", "Napoli Capodichino", 40.88, 14.29, 1);
 
         System.out.println("Aeroporti registrati:");
         for (Aeroporto a : aeroportoService.getTuttiAeroporti()) {
             System.out.println(a);
         }
+        
+        LocalDate dataTest = LocalDate.of(2025, 7, 11);
 
         // Creo voli di test
-        voloService.creaVolo("AZ123", "MXP", "FCO", 12.45, 850);
-        voloService.creaVolo("AZ124", "FCO", "MXP", 15.0, 900);
-        voloService.creaVolo("AZ125", "MXP", "FCO", 18.30, 800);
-        voloService.creaVolo("AZ126", "LIN", "NAP", 12.45, 850);
+        voloService.creaVolo("AZ123", "MXP", "FCO", 12.45, 850, dataTest);
+        voloService.creaVolo("AZ124", "FCO", "MXP", 15.0, 900, dataTest);
+        voloService.creaVolo("AZ125", "MXP", "FCO", 18.30, 800, dataTest);
+        voloService.creaVolo("AZ126", "LIN", "NAP", 12.45, 850, dataTest);
 
         System.out.println("\nVoli registrati:");
         for (Volo v : voloService.getTuttiVoli()) {
-            System.out.println(v);
+            System.out.println(v + " - Data: " + v.getDataVolo());
         }
         
         // Aggiungi prenotazioni di test
@@ -68,7 +71,7 @@ public class Main {
 
         System.out.println("\nVoli registrati:");
         for (Volo v : voli) {
-            System.out.println(v);
+            System.out.println(v + " - Data: " + v.getDataVolo());
         }
 
         // Test ricerca
@@ -80,7 +83,7 @@ public class Main {
                     v.aggiungiPrenotazione(p);
                 }
             }
-            System.out.println("\nDettagli volo trovato: " + v);
+            System.out.println("\nDettagli volo trovato: " + v + " - Data: " + v.getDataVolo());
         }
     }
 }

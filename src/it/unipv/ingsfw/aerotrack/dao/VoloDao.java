@@ -1,6 +1,7 @@
 package it.unipv.ingsfw.aerotrack.dao;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,33 +38,36 @@ public class VoloDao implements IVoloDao {
     public boolean aggiungiVolo(Volo v) {
         if (v == null) throw new IllegalArgumentException("Il volo non può essere null");
         String insertQuery = """
-            INSERT INTO voli (codice, partenza, destinazione, orario_partenza, velocita, pista_assegnata, ritardo, stato)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE
-                partenza = VALUES(partenza),
-                destinazione = VALUES(destinazione),
-                orario_partenza = VALUES(orario_partenza),
-                velocita = VALUES(velocita),
-                pista_assegnata = VALUES(pista_assegnata),
-                ritardo = VALUES(ritardo),
-                stato = VALUES(stato)
-            """;
-        try (Connection conn = DBConnection.startConnection("aerotrack");
-             PreparedStatement ps = conn.prepareStatement(insertQuery)) {
-            ps.setString(1, v.getCodice());
-            ps.setString(2, v.getPartenza().getCodice());
-            ps.setString(3, v.getDestinazione().getCodice());
-            ps.setDouble(4, v.getOrarioPartenza());
-            ps.setDouble(5, v.getVelocita());
-            ps.setInt(6, v.getPistaAssegnata() + 1);
-            ps.setDouble(7, v.getRitardo());
-            ps.setString(8, v.getStato() != null ? v.getStato().name() : "PROGRAMMATO");
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("Errore inserimento volo: " + e.getMessage());
-            return false;
-        }
-    }
+                INSERT INTO voli (codice, partenza, destinazione, orario_partenza, velocita, pista_assegnata, ritardo, stato, data_volo)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                    partenza = VALUES(partenza),
+                    destinazione = VALUES(destinazione),
+                    orario_partenza = VALUES(orario_partenza),
+                    velocita = VALUES(velocita),
+                    pista_assegnata = VALUES(pista_assegnata),
+                    ritardo = VALUES(ritardo),
+                    stato = VALUES(stato),
+                    data_volo = VALUES(data_volo)
+                """;
+            try (Connection conn = DBConnection.startConnection("aerotrack");
+                 PreparedStatement ps = conn.prepareStatement(insertQuery)) {
+                ps.setString(1, v.getCodice());
+                ps.setString(2, v.getPartenza().getCodice());
+                ps.setString(3, v.getDestinazione().getCodice());
+                ps.setDouble(4, v.getOrarioPartenza());
+                ps.setDouble(5, v.getVelocita());
+                ps.setInt(6, v.getPistaAssegnata());
+                ps.setDouble(7, v.getRitardo());
+                ps.setString(8, v.getStato() != null ? v.getStato().name() : "PROGRAMMATO");
+                ps.setDate(9, Date.valueOf(v.getDataVolo()));
+                return ps.executeUpdate() > 0;
+            } catch (SQLException e) {
+                System.err.println("Errore inserimento volo: " + e.getMessage());
+                return false;
+            }
+        }    
+    
 
     /**
      * Restituisce tutti i voli nel database.
@@ -73,11 +77,12 @@ public class VoloDao implements IVoloDao {
     @Override
     public List<Volo> getTuttiVoli() {
         List<Volo> listaVoli = new ArrayList<>();
-     // 1. Carica tutti gli aeroporti una sola volta in una mappa
+        // Carica tutti gli aeroporti una sola volta in una mappa
         Map<String, Aeroporto> aeroporti = new HashMap<>();
         for (Aeroporto a : aeroportoDao.getTuttiAeroporti()) {
             aeroporti.put(a.getCodice(), a);
         } 
+        
         
         String query = "SELECT * FROM voli";
         try (Connection conn = DBConnection.startConnection("aerotrack");
@@ -87,7 +92,9 @@ public class VoloDao implements IVoloDao {
             	Aeroporto partenza = aeroporti.get(rs.getString("partenza"));
                 Aeroporto destinazione = aeroporti.get(rs.getString("destinazione"));
                 if (partenza != null && destinazione != null) {
-                    Volo v = new Volo(
+                	LocalDate dataVolo = rs.getDate("data_volo").toLocalDate();
+                	int pista = rs.getInt("pista_assegnata");
+                	Volo v = new Volo(
                             rs.getString("codice"),
                             partenza,
                             destinazione,
@@ -95,16 +102,19 @@ public class VoloDao implements IVoloDao {
                             rs.getDouble("velocita"),
                             rs.getInt("pista_assegnata"),
                             rs.getDouble("ritardo"),
-                            Volo.StatoVolo.valueOf(rs.getString("stato"))
-                        
+                            Volo.StatoVolo.valueOf(rs.getString("stato")),
+                            dataVolo
                     );
+                    
                     // --- Ricostruisci le relazioni ---
                     partenza.aggiungiVoloInPartenza(v);
                     destinazione.aggiungiVoloInArrivo(v);
-                    int pista = rs.getInt("pista_assegnata");
+                    // Ricostruisci lo stato delle piste solo se la pista è valida e libera
                     if (pista >= 0 && pista < partenza.getNumeroPiste()) {
                         try {
-                            partenza.occupaPista(pista, v);
+                            if (partenza.getPiste()[pista] == null) {
+                                partenza.occupaPista(pista, v);
+                            }                        
                         } catch (Exception ignore) {} // pista già occupata da un altro volo con stessa pista? ignora
                     }
                     listaVoli.add(v);
@@ -117,13 +127,14 @@ public class VoloDao implements IVoloDao {
     }
 
     public boolean aggiornaVolo(Volo volo) {
-        String query = "UPDATE voli SET ritardo = ?, stato = ? WHERE codice = ?";
+        String query = "UPDATE voli SET ritardo = ?, stato = ?, data_volo = ? WHERE codice = ?";
         try (Connection conn = DBConnection.startConnection("aerotrack");
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setDouble(1, volo.getRitardo());
             stmt.setString(2, volo.getStato().name());
-            stmt.setString(3, volo.getCodice());
+            stmt.setDate(3, Date.valueOf(volo.getDataVolo()));
+            stmt.setString(4, volo.getCodice());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -152,6 +163,7 @@ public class VoloDao implements IVoloDao {
                 Aeroporto partenza = aeroportoDao.cercaPerCodice(rs.getString("partenza"));
                 Aeroporto destinazione = aeroportoDao.cercaPerCodice(rs.getString("destinazione"));
                 if (partenza != null && destinazione != null) {
+                	LocalDate dataVolo = rs.getDate("data_volo").toLocalDate();
                 	Volo v = new Volo (
                 			rs.getString("codice"),
                             partenza,
@@ -160,7 +172,8 @@ public class VoloDao implements IVoloDao {
                             rs.getDouble("velocita"),
                             rs.getInt("pista_assegnata"),
                             rs.getDouble("ritardo"),
-                            Volo.StatoVolo.valueOf(rs.getString("stato"))
+                            Volo.StatoVolo.valueOf(rs.getString("stato")),
+                            dataVolo
                         );
                         return v;
                 }

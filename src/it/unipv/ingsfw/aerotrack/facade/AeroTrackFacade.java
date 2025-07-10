@@ -1,6 +1,7 @@
 package it.unipv.ingsfw.aerotrack.facade;
 
 import java.util.List;
+import java.time.LocalDate;
 import it.unipv.ingsfw.aerotrack.services.*;
 import it.unipv.ingsfw.aerotrack.models.*;
 
@@ -49,8 +50,8 @@ public class AeroTrackFacade {
     /**
      * Crea un nuovo volo tra due aeroporti.
      */
-    public void creaVolo(String codice, String codicePartenza, String codiceDestinazione, double orario, double velocita)  {
-        voloService.creaVolo(codice, codicePartenza, codiceDestinazione, orario, velocita);
+    public void creaVolo(String codice, String codicePartenza, String codiceDestinazione, double orario, double velocita, LocalDate dataVolo)  {
+        voloService.creaVolo(codice, codicePartenza, codiceDestinazione, orario, velocita, dataVolo);
     }
     
     /**
@@ -100,11 +101,14 @@ public class AeroTrackFacade {
             creaAeroporto("NAP", "Napoli Capodichino", 40.8860, 14.2908, 1);
             creaAeroporto("VCE", "Venezia Marco Polo", 45.5053, 12.3519, 1);
             
+            // Data di esempio (oggi)
+            LocalDate dataEsempio = LocalDate.now();
+            
             // Voli di esempio
-            creaVolo("AZ101", "MXP", "FCO", 8.5, 850);
-            creaVolo("AZ102", "FCO", "MXP", 18.0, 850);
-            creaVolo("FR123", "LIN", "NAP", 14.30, 800);
-            creaVolo("LH456", "MXP", "VCE", 11.15, 750);
+            creaVolo("AZ101", "MXP", "FCO", 8.5, 850, dataEsempio);
+            creaVolo("AZ102", "FCO", "MXP", 18.0, 850, dataEsempio);
+            creaVolo("FR123", "LIN", "NAP", 14.30, 800, dataEsempio);
+            creaVolo("LH456", "MXP", "VCE", 11.15, 750, dataEsempio);
             
             // Prenotazioni di esempio
             prenotaVolo("Chiara", "Viale", "IT123456789", "AZ101");
