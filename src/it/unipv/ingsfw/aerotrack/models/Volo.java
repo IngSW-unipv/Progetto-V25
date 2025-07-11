@@ -73,25 +73,7 @@ public class Volo {
         
         // Aggiorna le liste degli aeroporti
         partenza.aggiungiVoloInPartenza(this);
-        destinazione.aggiungiVoloInArrivo(this);
-        
-
-         // Assegna una pista libera e cambia lo stato in PROGRAMMATO
-     	for (int i = 0; i < partenza.getNumeroPiste(); i++) {
-             if (partenza.getPiste()[i] == null) {
-                 partenza.occupaPista(i, this);
-                 this.pistaAssegnata = i;
-                 break;
-             }    
-         }
-     	
-     	for (int i = 0; i < destinazione.getNumeroPiste(); i++) {
-             if (destinazione.getPiste()[i] == null) {
-                 destinazione.occupaPista(i, this);
-                 break;
-             }    
-         }
-        
+        destinazione.aggiungiVoloInArrivo(this);  
     }
 	
     /**
@@ -116,6 +98,7 @@ public class Volo {
         this.ritardo = ritardo;
         this.stato = stato != null ? stato : StatoVolo.PROGRAMMATO;
         this.dataVolo = dataVolo;
+        this.pistaLiberata = false;
     }
     
     /**
@@ -194,6 +177,13 @@ public class Volo {
         return pistaAssegnata; 
     }
     
+    /**
+     * Restituisce true se il volo è stato cancellato.
+     */
+    public boolean isCancellato() {
+        return stato == StatoVolo.CANCELLATO;
+    }
+    
     // === SETTER ===
     public void setStato(StatoVolo stato) {
         this.stato = stato;
@@ -205,13 +195,6 @@ public class Volo {
 
     public void setRitardo(double ritardo) {
         this.ritardo = ritardo;
-    }
-
-    /**
-     * Restituisce true se il volo è stato cancellato.
-     */
-    public boolean isCancellato() {
-        return stato == StatoVolo.CANCELLATO;
     }
 
     /**
@@ -293,7 +276,48 @@ public class Volo {
     }
     
     /**
+     * Trova il primo orario in cui almeno una pista dell'aeroporto di partenza è libera.
+     * Se nessuna pista è occupata, restituisce l'orario richiesto.
+     */
+    public double trovaPrimoOrarioLiberoSuQualsiasiPista() {
+    	double orarioRichiesto = this.orarioPartenza;
+        double minOrarioLibero = Double.MAX_VALUE;
+
+        for (int i = 0; i < partenza.getNumeroPiste(); i++) {
+            Volo occupante = partenza.getPiste()[i];
+            if (occupante == null) {
+                // Pista libera da subito
+                return orarioRichiesto;
+            } else {
+                // Calcola quando la pista si libera (fine occupazione = partenza + 0.5 ore)
+                double fineOccupazione = occupante.getOrarioPartenza() + 0.5;
+                if (fineOccupazione < minOrarioLibero) {
+                    minOrarioLibero = fineOccupazione;
+                }
+            }
+        }
+        // Se nessuna pista libera subito, restituisci il primo orario libero tra tutte
+        return minOrarioLibero;
+    }
+    
+    /**
+     * Trova l'indice della pista libera all'orario indicato.
+     * Restituisce l'indice della pista oppure -1 se nessuna è libera.
+     */
+    public int trovaIndicePistaLibera(double orarioLibero) {
+        for (int i = 0; i < partenza.getNumeroPiste(); i++) {
+            Volo occupante = partenza.getPiste()[i];
+            // Libera se non c'è volo oppure il volo che la occupa parte prima di orarioLibero
+            if (occupante == null || (occupante.getOrarioPartenza() + 0.5 <= orarioLibero)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    /**
      * Aggiorna lo stato del volo e libera la pista in base all'orario reale.
+     * Il ritardo viene calcolato solo se la pista non è assegnata e il  volo è pronto a partire.
      * @param orarioReale l'orario reale 
      */
     public void aggiornaStatoECalcolaRitardo(double orarioReale) {
@@ -316,13 +340,27 @@ public class Volo {
         }
 
         // Se la data è oggi, calcola in base all'orario
-        // Calcolo del ritardo SOLO se la pista non è libera
-        if (pistaAssegnata < 0) {
-            this.ritardo = calcolaRitardo();
-        } else {
-            this.ritardo = 0;// se la pista è libera il volo parte puntuale
+        // Ritardo solo se la pista non è assegnata e siamo all'orario di partenza
+        if (stato == StatoVolo.PROGRAMMATO && orarioReale >= orarioPartenza) {
+            if (pistaAssegnata < 0) {
+                // Calcola ritardo come tempo di attesa per pista libera
+                double primoOrarioLibero = trovaPrimoOrarioLiberoSuQualsiasiPista();
+                ritardo = primoOrarioLibero - orarioPartenza;
+                if (ritardo < 0) ritardo = 0;
+                // Assegna la pista ora libera
+                int pistaLibera = trovaIndicePistaLibera(primoOrarioLibero);
+                if (pistaLibera >= 0) {
+                	Volo occupante = partenza.getPiste()[pistaLibera];
+                    if (occupante == null || (occupante.getOrarioPartenza() + 0.5 <= primoOrarioLibero)) {
+                        partenza.liberaPista(pistaLibera); // Libera la pista se il volo precedente dovrebbe aver decollato
+                        partenza.occupaPista(pistaLibera, this);
+                        pistaAssegnata = pistaLibera;
+                    }
+                }
+            } else {
+                ritardo = 0;
+            }
         }
-
         double partenzaEffettiva = orarioPartenza + ritardo;
 
         // Stato sequenziale
@@ -334,17 +372,13 @@ public class Volo {
             stato = StatoVolo.IN_PARTENZA;
         } else if (orarioReale >= partenzaEffettiva + 0.1 && orarioReale < partenzaEffettiva + 0.1 + calcolaTempo()) {
             stato = StatoVolo.IN_VOLO;
-        } else if (orarioReale >= partenzaEffettiva + 0.1 + calcolaTempo()) {
-            stato = StatoVolo.ATTERRATO;
-            // Libera la pista solo se assegnata e valida
-            if (!pistaLiberata 
-                && pistaAssegnata >= 0 
-                && pistaAssegnata < partenza.getNumeroPiste()
-                && pistaAssegnata < destinazione.getNumeroPiste()) {
+            // Libera la pista una volta decollato
+            if (pistaAssegnata >= 0 && !pistaLiberata) {
                 partenza.liberaPista(pistaAssegnata);
-                destinazione.liberaPista(pistaAssegnata);
                 pistaLiberata = true;
             }
+        } else if (orarioReale >= partenzaEffettiva + 0.1 + calcolaTempo()) {
+            stato = StatoVolo.ATTERRATO;
         }
     }
 

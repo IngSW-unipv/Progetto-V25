@@ -30,7 +30,7 @@ public class UserVoloPanel extends JPanel {
         setLayout(new BorderLayout());
 
         // Tabella
-        tableModel = new DefaultTableModel(new Object[]{"Codice", "Partenza", "Destinazione", "Orario", "Ritardo", "Pista", "Stato"}, 0) {
+        tableModel = new DefaultTableModel(new Object[]{"Codice", "Partenza", "Destinazione", "Orario", "Ritardo", "Stato"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
@@ -139,7 +139,6 @@ public class UserVoloPanel extends JPanel {
                          v.getDestinazione().getCodice(),
                          v.getOrarioPartenza(),
                          (v.calcolaRitardo() > 0) ? v.getRitardo() : " ",
-                         (v.getPistaAssegnata() > 0) ? v.getPistaAssegnata() : "-",
                          v.calcolaStato(orario).name()
                         });
                 }
@@ -170,7 +169,6 @@ public class UserVoloPanel extends JPanel {
                 v.getDestinazione().getCodice(),
                 v.getOrarioPartenza(),
                 (v.getRitardo() > 0) ? v.getRitardo() : " ",
-                (v.getPistaAssegnata() > 0) ? v.getPistaAssegnata() : "-",
                 v.getStato().name()
             });
         }

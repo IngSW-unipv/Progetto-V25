@@ -99,17 +99,13 @@ public class UserPrenotazionePanel extends JPanel {
             int conf = JOptionPane.showConfirmDialog(this, "Sicuro di voler cancellare la prenotazione?", "Conferma", JOptionPane.YES_NO_OPTION);
             if (conf == JOptionPane.YES_OPTION) {
                 prenotazione.cancella();
-                if (conf == JOptionPane.YES_OPTION) {
-                    prenotazione.cancella();
-                    try {
-                        prenotazioneService.aggiornaPrenotazione(prenotazione); // Salva nel DB
-                        aggiornaTabella();
-                        JOptionPane.showMessageDialog(this, "Prenotazione cancellata!");
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, "Errore durante la cancellazione: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-                    }
+                try {
+                    prenotazioneService.aggiornaPrenotazione(prenotazione); // Salva nel DB
+                    aggiornaTabella();
+                    JOptionPane.showMessageDialog(this, "Prenotazione cancellata!");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Errore durante la cancellazione: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
-
             }
         });
 
