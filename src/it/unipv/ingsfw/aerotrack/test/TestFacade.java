@@ -4,6 +4,7 @@ import it.unipv.ingsfw.aerotrack.facade.AeroTrackFacade;
 import it.unipv.ingsfw.aerotrack.models.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class TestFacade {
     public static void main(String[] args) {
@@ -24,7 +25,7 @@ public class TestFacade {
         LocalDate dataTest = LocalDate.now();
 
         // Ora crea il volo specificando anche la data
-        facade.creaVolo("IT500", "VCE", "NAP", 15.10, 800, dataTest);
+        facade.creaVolo("IT500", "VCE", "NAP", LocalTime.of(15, 10), 800, dataTest);
 
         // Prenota due passeggeri su IT500
         facade.prenotaVolo("Chiara", "Viale", "DOC123", "IT500");

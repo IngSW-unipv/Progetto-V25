@@ -18,7 +18,7 @@ public class Aeroporto {
     private final double latitudine;
     private final double longitudine;
     private final int numeroPiste;
-    private final Volo[] piste; 
+    private final List<Volo>[] piste;
     private final List<Volo> voliInPartenza;
     private final List<Volo> voliInArrivo;
     
@@ -63,7 +63,10 @@ public class Aeroporto {
 		this.latitudine = latitudine;
 		this.longitudine = longitudine;
 		this.numeroPiste = numeroPiste;
-		this.piste = new Volo[numeroPiste]; 
+        piste = new ArrayList[numeroPiste];  
+        for (int i = 0; i < piste.length; i++) {
+            piste[i] = new ArrayList<>();
+        }
         this.voliInPartenza = new ArrayList<>();     
         this.voliInArrivo = new ArrayList<>();
 	}
@@ -115,11 +118,11 @@ public class Aeroporto {
 	}
 	
 	/**
-     * Restituisce l'array che rappresenta lo stato delle piste.
+     * Restituisce l'array che rappresenta la list di ogni pista.
      * 
-     * @return Stato piste (array di voli, null se libera)
+     * @return Stato piste (List di voli per tutta la giornata)
      */
-	public Volo[] getPiste() {
+	public List<Volo>[] getPiste() {
 		return piste.clone();
 	}
 	
@@ -140,24 +143,8 @@ public class Aeroporto {
    public List<Volo> getVoliInArrivo() {
        return new ArrayList<>(voliInArrivo);
    }
-   
-   /** Libera la pista specificata */
-   public void liberaPista(int indicePista) {
-       if (indicePista < 0 || indicePista >= numeroPiste) 
-    	   throw new IllegalArgumentException("Indice pista non valido");
-       piste[indicePista] = null;
-   }
 
-   /** Occupa una pista con il volo dato. */
-   public boolean occupaPista(int indicePista, Volo v) {
-       if (indicePista < 0 || indicePista >= numeroPiste) 
-    	   throw new IllegalArgumentException("Indice pista non valido");
-       if (v == null) throw new IllegalArgumentException("Volo null");
-       if (piste[indicePista] != null) 
-    	   throw new IllegalStateException("Pista già occupata");
-       piste[indicePista] = v;
-       return true;
-   }
+
    
    /** Aggiunge un volo in partenza */
    public void aggiungiVoloInPartenza(Volo v) {
@@ -194,11 +181,14 @@ public class Aeroporto {
     */
    @Override
    public String toString() {
-	   int libere = 0;
-	   for (Volo v : piste) if (v == null) libere++;
-	   return String.format("Aeroporto{codice='%s', nome='%s', coordinate=(%.4f, %.4f), piste=%d, pisteLibere=%d}",
-	           codice, nome, latitudine, longitudine, numeroPiste, libere);
-	}
+       int libere = 0;
+       for (List<Volo> lista : piste) {
+           if (lista == null || lista.isEmpty()) libere++;
+       }
+
+       return String.format("Aeroporto{codice='%s', nome='%s', coordinate=(%.4f, %.4f), piste=%d, pisteLibere=%d}",
+               codice, nome, latitudine, longitudine, numeroPiste, libere);
+   }
    
    @Override
    public boolean equals(Object o) {

@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -182,13 +183,13 @@ public class UserPrenotazionePanel extends JPanel {
             	// Notifica utente se il volo è in ritardo o cancellato
             	if (p.getVolo() != null) {
             		Volo volo = p.getVolo();
-            		if (volo.getRitardo() > 0) {
+            		if (volo.getRitardo().isAfter(LocalTime.of(0, 0))) {
                         JOptionPane.showMessageDialog(this,
                             "Attenzione: il volo " + volo.getCodice() + " ha un ritardo di " + volo.getRitardo() + " minuti.",
                             "Ritardo volo", JOptionPane.WARNING_MESSAGE);
                     }
                 
-                    if (volo.isCancellato()) {
+                    if (volo.getStato().equals("CANCELLATO")) {
                 	    JOptionPane.showMessageDialog(this,
                 	    	"Attenzione: il volo " + volo.getCodice() + " è stato cancellato.",
                 			"Volo cancellato", JOptionPane.ERROR_MESSAGE);

@@ -4,6 +4,7 @@ import it.unipv.ingsfw.aerotrack.services.*;
 import it.unipv.ingsfw.aerotrack.models.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  * Test manuale: verifica la creazione di aeroporti, voli e prenotazioni.
@@ -31,7 +32,7 @@ public class Tester {
         // Definisci la data del volo per il test
         LocalDate dataTest = LocalDate.now();
         
-        voloService.creaVolo("FR100", "LIN", "NAP", 10.00, 780, dataTest);
+        voloService.creaVolo("FR100", "LIN", "NAP", LocalTime.of(10, 0), 780, dataTest);
         
         // Crea due prenotazioni
         prenotazioneService.creaPrenotazione("Chiara", "Viale", "IT12345", "FR100");

@@ -15,7 +15,13 @@ public class Prenotazione {
     private final String codicePrenotazione;
     private static int contatoreCodici = 1000;
     
-    
+    /**
+     * Costruttore per creare una nuova prenotazione.
+     *
+     * @param passeggero Passeggero che effettua la prenotazione
+     * @param volo Volo prenotato
+     * @throws IllegalArgumentException se il passeggero è null
+     */
     public Prenotazione(Passeggero passeggero, Volo volo) {
         if (passeggero == null) 
         	throw new IllegalArgumentException("Il passeggero non può essere null");

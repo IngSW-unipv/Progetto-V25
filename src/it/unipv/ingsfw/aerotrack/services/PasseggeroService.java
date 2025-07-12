@@ -13,16 +13,19 @@ public class PasseggeroService {
 	private static PasseggeroService instance; 
 	private final PasseggeroDao passeggeroDao = PasseggeroDao.getInstance();
 
-	// costruttore privato
+
     private PasseggeroService() {}
 
-    // metodo statico per ottenere l'istanza singleton
+    /** @return istanza singleton */
     public static PasseggeroService getInstance() {
         if (instance == null) {
-            instance = new PasseggeroService();
+            synchronized (PasseggeroService.class) {
+                if (instance == null) instance = new PasseggeroService();
+            }
         }
         return instance;
     }
+
     
     /**
      * Aggiunge un nuovo passeggero se non esiste già.

@@ -25,10 +25,12 @@ public class PrenotazioneService {
         this.voloDao = VoloDao.getInstance();
     }
 
-    public static PrenotazioneService getInstance() {
+    /** @return istanza singleton */
+    public static synchronized PrenotazioneService getInstance() {
         if (instance == null) instance = new PrenotazioneService();
         return instance;
     }
+
     
     /**
      * Svuota la tabella prenotazioni. Da usare solo per test!

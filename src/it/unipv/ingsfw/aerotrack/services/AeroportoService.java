@@ -24,10 +24,15 @@ public class AeroportoService {
     }
     
     /** @return istanza singleton */
-    public static AeroportoService getInstance() {
-        if (instance == null) instance = new AeroportoService();
-        return instance;
-    }
+	public static AeroportoService getInstance() {
+	    if (instance == null) {
+	        synchronized (AeroportoService.class) {
+	            if (instance == null) instance = new AeroportoService();
+	        }
+	    }
+	    return instance;
+	}
+
     
     public void svuotaAeroporti() {
         try (Connection conn = DBConnection.startConnection("aerotrack");

@@ -59,10 +59,18 @@ public class TestRelazioniVoliAeroporto {
 
         // Verifica che le piste non siano tutte libere se ci sono voli sulla stessa pista
         System.out.println("Stato delle piste dell'aeroporto " + aeroporto.getCodice() + ":");
-        int i = 1;
-        for (Volo v : aeroporto.getPiste()) {
-            System.out.println("Pista " + i + ": " + (v == null ? "LIBERA" : "Occupata da " + v.getCodice()));
-            i++;
+
+        for (int i = 0; i < aeroporto.getNumeroPiste(); i++) {
+            List<Volo> pista = aeroporto.getPiste()[i];  // o getPiste().get(i) se è lista
+
+            if (pista == null || pista.isEmpty()) {
+                System.out.println("Pista " + i + ": LIBERA");
+            } else {
+                for (Volo v : pista) {
+                    System.out.println("Pista " + i + ": Programmata per il volo " + v.getCodice());
+                }
+            }
         }
+
     }
 }

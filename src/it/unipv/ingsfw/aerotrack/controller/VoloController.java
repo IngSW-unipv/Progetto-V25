@@ -1,9 +1,11 @@
 package it.unipv.ingsfw.aerotrack.controller;
 
 import it.unipv.ingsfw.aerotrack.models.Volo;
+
 import it.unipv.ingsfw.aerotrack.services.VoloService;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -24,7 +26,7 @@ public class VoloController {
     /**
      * Crea un nuovo volo.
      */
-    public void creaVolo(String codice, String partenza, String destinazione, double orario, double velocita, LocalDate dataVolo) {
+    public void creaVolo(String codice, String partenza, String destinazione, LocalTime orario, double velocita, LocalDate dataVolo) {
         voloService.creaVolo(codice, partenza, destinazione, orario, velocita, dataVolo);
     }
 

@@ -79,14 +79,13 @@ public class StaffVoloPanel extends JPanel {
         	int res = JOptionPane.showConfirmDialog(this, fields, "Nuovo Volo", JOptionPane.OK_CANCEL_OPTION);
         	if (res == JOptionPane.OK_OPTION) {
         		try {
-        			LocalDate dataVolo = LocalDate.parse(data.getText().trim());
         			voloService.creaVolo(
                         codice.getText().trim(),
                         partenza.getSelectedItem().toString(),
                         destinazione.getSelectedItem().toString(),
-                        Double.parseDouble(orario.getText().trim()),
+                        LocalTime.parse(orario .getText().trim()),
                         Double.parseDouble(velocita.getText().trim()),
-                        dataVolo
+                        LocalDate.parse(data.getText().trim())
         			);
         			aggiornaTabella();
         			JOptionPane.showMessageDialog(this, "Volo aggiunto!");
@@ -143,8 +142,7 @@ public class StaffVoloPanel extends JPanel {
             int res = JOptionPane.showConfirmDialog(this, fields, "Modifica stato/ritardo volo", JOptionPane.OK_CANCEL_OPTION);
             if (res == JOptionPane.OK_OPTION) {
                 try {
-                    double nuovoRitardo = Double.parseDouble(ritardo.getText().trim());
-                    LocalDate nuovaData = LocalDate.parse(dataField.getText().trim());
+                    LocalTime nuovoRitardo = LocalTime.parse(ritardo.getText().trim());
                     if (voloService.aggiornaStatoERitardo(codice, nuovoRitardo, (Volo.StatoVolo) stato.getSelectedItem())) {
                         aggiornaTabella();
                         JOptionPane.showMessageDialog(this, "Modifiche effettuate!");
@@ -176,12 +174,6 @@ public class StaffVoloPanel extends JPanel {
     }
 
     private void aggiornaTabella() {
-    	LocalTime now = LocalTime.now();
-        double orarioReale = now.getHour() + now.getMinute() / 60.0;
-        for (Volo v : voloService.getTuttiVoli()) {
-            v.aggiornaStatoECalcolaRitardo(orarioReale);
-            voloService.aggiornaStatoERitardo(v.getCodice(), v.getRitardo(), v.getStato());
-        }
         model.setRowCount(0);
         for (Volo v : voloService.getTuttiVoli()) {
             model.addRow(new Object[]{
@@ -190,9 +182,9 @@ public class StaffVoloPanel extends JPanel {
                 v.getDestinazione().getCodice(),
                 v.getOrarioPartenza(),
                 v.getDataVolo(),
-                (v.getRitardo() > 0 ? v.getRitardo() : " "),
-                (v.getPistaAssegnata() >= 0 ? v.getPistaAssegnata() + 1 : "-"),
-                (v.getStato() != null ? v.getStato().name() : "")
+                v.getRitardo().toSecondOfDay() > 0 ? (v.getRitardo().toSecondOfDay() / 60) + "'" : "-",
+                (v.getPistaAssegnata() >= 0 ? v.getPistaAssegnata(): "-"),
+                v.calcolaStato(LocalTime.now())
             });
         }
     }

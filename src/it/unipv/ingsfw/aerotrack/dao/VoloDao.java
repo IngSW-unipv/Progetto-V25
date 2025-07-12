@@ -1,7 +1,10 @@
 package it.unipv.ingsfw.aerotrack.dao;
 
 import java.sql.*;
+
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,15 +55,15 @@ public class VoloDao implements IVoloDao {
                 """;
             try (Connection conn = DBConnection.startConnection("aerotrack");
                  PreparedStatement ps = conn.prepareStatement(insertQuery)) {
-                ps.setString(1, v.getCodice());
-                ps.setString(2, v.getPartenza().getCodice());
-                ps.setString(3, v.getDestinazione().getCodice());
-                ps.setDouble(4, v.getOrarioPartenza());
-                ps.setDouble(5, v.getVelocita());
-                ps.setInt(6, v.getPistaAssegnata());
-                ps.setDouble(7, v.getRitardo());
-                ps.setString(8, v.getStato() != null ? v.getStato().name() : "PROGRAMMATO");
-                ps.setDate(9, Date.valueOf(v.getDataVolo()));
+            	ps.setString(1, v.getCodice());
+            	ps.setString(2, v.getPartenza().getCodice());
+            	ps.setString(3, v.getDestinazione().getCodice());
+            	ps.setTime(4, java.sql.Time.valueOf(v.getOrarioPartenza()));
+            	ps.setDouble(5, v.getVelocita());
+            	ps.setInt(6, v.getPistaAssegnata() + 1);
+            	ps.setTime(7, java.sql.Time.valueOf(v.getRitardo())); 
+            	ps.setString(8, v.getStato() != null ? v.getStato().name() : "PROGRAMMATO");
+            	ps.setDate(9, java.sql.Date.valueOf(v.getDataVolo()));
                 return ps.executeUpdate() > 0;
             } catch (SQLException e) {
                 System.err.println("Errore inserimento volo: " + e.getMessage());
@@ -93,31 +96,35 @@ public class VoloDao implements IVoloDao {
                 Aeroporto destinazione = aeroporti.get(rs.getString("destinazione"));
                 if (partenza != null && destinazione != null) {
                 	LocalDate dataVolo = rs.getDate("data_volo").toLocalDate();
+                	LocalTime orarioPartenza = rs.getTime("orario_partenza").toLocalTime();
+
                 	int pista = rs.getInt("pista_assegnata");
                 	Volo v = new Volo(
-                            rs.getString("codice"),
-                            partenza,
-                            destinazione,
-                            rs.getDouble("orario_partenza"),
-                            rs.getDouble("velocita"),
-                            rs.getInt("pista_assegnata"),
-                            rs.getDouble("ritardo"),
-                            Volo.StatoVolo.valueOf(rs.getString("stato")),
-                            dataVolo
-                    );
-                    
-                    // --- Ricostruisci le relazioni ---
-                    partenza.aggiungiVoloInPartenza(v);
-                    destinazione.aggiungiVoloInArrivo(v);
-                    // Ricostruisci lo stato delle piste solo se la pista è valida e libera
-                    if (pista >= 0 && pista < partenza.getNumeroPiste()) {
-                        try {
-                            if (partenza.getPiste()[pista] == null) {
-                                partenza.occupaPista(pista, v);
-                            }                        
-                        } catch (Exception ignore) {} // pista già occupata da un altro volo con stessa pista? ignora
-                    }
-                    listaVoli.add(v);
+                		    rs.getString("codice"),
+                		    partenza,
+                		    destinazione,
+                		    orarioPartenza,
+                		    rs.getDouble("velocita"),
+                		    dataVolo
+                		);
+                		v.setPistaAssegnata(rs.getInt("pista_assegnata"));
+
+                		Time ritardoDb = rs.getTime("ritardo");
+                		if (ritardoDb != null) {
+                		    v.setRitardo(ritardoDb.toLocalTime());
+                		} else {
+                		    v.setRitardo(LocalTime.of(0, 0));
+                		}
+
+                		String statoDb = rs.getString("stato");
+                		if (statoDb != null) {
+                		    v.setStato(Volo.StatoVolo.valueOf(statoDb));
+                		} else {
+                		    v.setStato(Volo.StatoVolo.PROGRAMMATO);
+                		}
+
+                		listaVoli.add(v);
+
                 }
             }
         } catch (SQLException e) {
@@ -131,7 +138,7 @@ public class VoloDao implements IVoloDao {
         try (Connection conn = DBConnection.startConnection("aerotrack");
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setDouble(1, volo.getRitardo());
+            stmt.setTime(1, java.sql.Time.valueOf(volo.getRitardo()));
             stmt.setString(2, volo.getStato().name());
             stmt.setDate(3, Date.valueOf(volo.getDataVolo()));
             stmt.setString(4, volo.getCodice());
@@ -163,18 +170,17 @@ public class VoloDao implements IVoloDao {
                 Aeroporto partenza = aeroportoDao.cercaPerCodice(rs.getString("partenza"));
                 Aeroporto destinazione = aeroportoDao.cercaPerCodice(rs.getString("destinazione"));
                 if (partenza != null && destinazione != null) {
-                	LocalDate dataVolo = rs.getDate("data_volo").toLocalDate();
-                	Volo v = new Volo (
-                			rs.getString("codice"),
+                	Volo v = new Volo (                      
+                            rs.getString("codice"),
                             partenza,
                             destinazione,
-                            rs.getDouble("orario_partenza"),
+                            rs.getTime("orario_partenza").toLocalTime(),
                             rs.getDouble("velocita"),
-                            rs.getInt("pista_assegnata"),
-                            rs.getDouble("ritardo"),
-                            Volo.StatoVolo.valueOf(rs.getString("stato")),
-                            dataVolo
+                            rs.getDate("data_volo").toLocalDate()
                         );
+                	v.setPistaAssegnata(rs.getInt("pista_assegnata"));
+                    v.setRitardo(rs.getTime("ritardo").toLocalTime());
+                    v.setStato(Volo.StatoVolo.valueOf(rs.getString("stato")));
                         return v;
                 }
             }

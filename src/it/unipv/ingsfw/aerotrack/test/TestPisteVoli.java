@@ -4,6 +4,7 @@ import it.unipv.ingsfw.aerotrack.models.Aeroporto;
 import it.unipv.ingsfw.aerotrack.models.Volo;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class TestPisteVoli {
 
         // Crea 3 voli in partenza da MXP allo stesso orario
         for (int i = 1; i <= 3; i++) {
-            Volo v = new Volo("TEST" + i, mxp, fco, 12.00, 800.0, dataTest);
+            Volo v = new Volo("TEST" + i, mxp, fco, LocalTime.of(12, 0), 800.0, dataTest);
             voli.add(v);
         }
 

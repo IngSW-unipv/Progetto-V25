@@ -4,6 +4,7 @@ import it.unipv.ingsfw.aerotrack.models.*;
 import it.unipv.ingsfw.aerotrack.services.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -23,6 +24,7 @@ public class Main {
         prenotazioneService.svuotaPrenotazioni();
         voloService.svuotaVoli();
         passeggeroService.svuotaPasseggeri(); 
+        aeroportoService.svuotaAeroporti();
 
         
         // Creo aeroporti di test
@@ -36,13 +38,15 @@ public class Main {
             System.out.println(a);
         }
         
-        LocalDate dataTest = LocalDate.of(2025, 7, 11);
+        LocalDate dataTest = LocalDate.now();
 
         // Creo voli di test
-        voloService.creaVolo("AZ123", "MXP", "FCO", 12.45, 850, dataTest);
-        voloService.creaVolo("AZ124", "FCO", "MXP", 15.0, 900, dataTest);
-        voloService.creaVolo("AZ125", "MXP", "FCO", 18.30, 800, dataTest);
-        voloService.creaVolo("AZ126", "LIN", "NAP", 12.45, 850, dataTest);
+        voloService.creaVolo("AZ123", "MXP", "FCO", LocalTime.of(14, 30), 850, dataTest);   
+        voloService.creaVolo("AZ124", "MXP", "FCO", LocalTime.of(14, 45), 850, dataTest);
+        voloService.creaVolo("AZ125", "MXP", "FCO", LocalTime.of(14, 50), 850, dataTest);
+        voloService.creaVolo("AZ126", "FCO", "MXP", LocalTime.of(14, 30), 900, dataTest);
+        voloService.creaVolo("AZ127", "MXP", "FCO", LocalTime.of(20, 00), 800, dataTest);
+        voloService.creaVolo("AZ128", "LIN", "NAP", LocalTime.of(10, 00), 850, dataTest);
 
         System.out.println("\nVoli registrati:");
         for (Volo v : voloService.getTuttiVoli()) {

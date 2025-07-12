@@ -1,9 +1,11 @@
 package it.unipv.ingsfw.aerotrack.services;
 
 import java.sql.Connection;
+
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import it.unipv.ingsfw.aerotrack.dao.*;
@@ -25,7 +27,11 @@ public class VoloService {
     }
     
     public static VoloService getInstance() {
-        if (instance == null) instance = new VoloService();
+        if (instance == null) {
+            synchronized (VoloService.class) {
+                if (instance == null) instance = new VoloService();
+            }
+        }
         return instance;
     }
     
@@ -44,7 +50,7 @@ public class VoloService {
      * 
      * @throws IllegalArgumentException se i dati non sono validi
      */
-    public void creaVolo(String codice, String codicePartenza, String codiceDestinazione, double orario, double velocita, LocalDate dataVolo) {
+    public void creaVolo(String codice, String codicePartenza, String codiceDestinazione, LocalTime orario, double velocita, LocalDate dataVolo) {
         // Validazioni
         if (codice == null || codice.isEmpty()) {
             throw new IllegalArgumentException("Codice volo non può essere vuoto");
@@ -58,47 +64,17 @@ public class VoloService {
         if (dataVolo == null) {
             throw new IllegalArgumentException("Data volo non può essere null");
         }
+        if (orario == null) {
+            throw new IllegalArgumentException("Orario partenza non può essere null");
+        }
+
         Aeroporto partenza = aeroportoDao.cercaPerCodice(codicePartenza);
         Aeroporto destinazione = aeroportoDao.cercaPerCodice(codiceDestinazione);
         if (partenza == null || destinazione == null) {
             throw new IllegalArgumentException("Aeroporto di partenza o destinazione non trovato");
         }
         
-        // Trova la prima pista libera nell'aeroporto di partenza in quell'orario
-        int pistaLiberaPartenza = -1;
-        for (int i = 0; i < partenza.getNumeroPiste(); i++) {
-            if (partenza.getPiste()[i] == null) {
-                pistaLiberaPartenza = i;
-                break;
-            }
-        }
-        
-        // Trova la prima pista libera nell'aeroporto di destinazione in quell'orario
-        int pistaLiberaDestinazione = -1;
-        for (int i = 0; i < destinazione.getNumeroPiste(); i++) {
-            if (destinazione.getPiste()[i] == null) {
-            	pistaLiberaDestinazione= i;
-                break;
-            }
-        }
-        
-        Volo volo;
-        if (pistaLiberaPartenza != -1) {
-        	if (pistaLiberaDestinazione != -1) {
-        		volo = new Volo(codice, partenza, destinazione, orario, velocita, pistaLiberaPartenza, 0, Volo.StatoVolo.PROGRAMMATO, dataVolo);
-                partenza.occupaPista(pistaLiberaPartenza, volo); // Aggiorna lo stato in memoria
-                destinazione.occupaPista(pistaLiberaDestinazione, volo); // Aggiorna lo stato in memoria
-        	} else {
-                // Nessuna pista libera a destinazione: stato IN_VOLO e calcolo ritardo
-                volo = new Volo(codice, partenza, destinazione, orario, velocita, pistaLiberaPartenza, 0, Volo.StatoVolo.PROGRAMMATO, dataVolo);
-                volo.setRitardo(volo.calcolaRitardo());
-                partenza.occupaPista(pistaLiberaPartenza, volo); // Aggiorna lo stato in memoria
-        	}
-        } else {
-            // Nessuna pista libera in partenza: stato IN_ATTESA e calcolo ritardo
-            volo = new Volo(codice, partenza, destinazione, orario, velocita, -1, 0, Volo.StatoVolo.PROGRAMMATO, dataVolo);
-            volo.setRitardo(volo.calcolaRitardo());
-        }
+        Volo  volo = new Volo(codice, partenza, destinazione, orario, velocita, dataVolo);
 
         if (!voloDao.aggiungiVolo(volo)) {
             throw new RuntimeException("Errore nell'inserimento del volo");
@@ -109,7 +85,7 @@ public class VoloService {
     /**
      * Aggiorna lo stato e il ritardo di un volo con i valori dati.
      */
-    public boolean aggiornaStatoERitardo(String codice, double ritardo, Volo.StatoVolo stato) {
+    public boolean aggiornaStatoERitardo(String codice, LocalTime ritardo, Volo.StatoVolo stato) {
         Volo v = voloDao.cercaPerCodice(codice);
         if (v == null) {
             throw new VoloNonTrovatoException(codice);
@@ -136,9 +112,12 @@ public class VoloService {
      * Restituisce tutti i voli.
      */
     public List<Volo> getTuttiVoli() {
-        return voloDao.getTuttiVoli();
+        LocalDate oggi = LocalDate.now();
+        return voloDao.getTuttiVoli().stream()
+                .filter(v -> v.getDataVolo().isAfter(oggi) || v.getDataVolo().isEqual(oggi))
+                .collect(Collectors.toList());
     }
-    
+
     /**
      * Trova voli per aeroporto di partenza.
      */
@@ -161,8 +140,11 @@ public class VoloService {
      * Rimuove un volo dal sistema.
      */
     public boolean rimuoviVolo(String codice) {
+        Volo v = voloDao.cercaPerCodice(codice);
+        if (v == null) throw new VoloNonTrovatoException(codice);
         return voloDao.rimuoviVolo(codice);
     }
+
     
     /** Eccezione custom */
     public static class VoloNonTrovatoException extends RuntimeException {
