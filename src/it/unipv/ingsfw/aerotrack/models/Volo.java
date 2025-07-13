@@ -250,24 +250,26 @@ public class Volo{
 
             for (Volo v : aeroporto.getPiste()[i]) {
             	if(v.getDataVolo().isEqual(dataVolo)) {
-            		   // Conflitto con altri voli in partenza sulla stessa pista
-                    if (v.getPartenza().equals(aeroporto)) {
-                        if (!(mioOrario.plusMinutes(30).isBefore(v.getOrarioPartenza()) ||
-                              mioOrario.isAfter(v.getOrarioPartenza().plusMinutes(30)))) {
-                            libera = false;
-                            break;
-                        }
-                    }
+            		if(v.getDataVolo().isEqual(dataVolo)) {
+             		   // Conflitto con altri voli in partenza sulla stessa pista
+            			if (v.getPartenza().equals(aeroporto)) {
+            				if (!(mioOrario.plusMinutes(30).isBefore(v.getOrarioPartenza()) ||
+            						mioOrario.isAfter(v.getOrarioPartenza().plusMinutes(30)))) {
+            					libera = false;
+            					break;
+            				}
+                	   }
 
-                    // Conflitto con voli in arrivo sulla stessa pista
-                    if (v.getDestinazione().equals(aeroporto)) {
-                        if (!(mioOrario.plusMinutes(30).isBefore(v.getOrarioPartenza().plusMinutes(30 + v.calcolaTempo())) ||
-                              mioOrario.isAfter(v.getOrarioPartenza().plusMinutes(30 + v.calcolaTempo())))) {
-                            libera = false;
-                            break;
-                        }
-                    }
-            	}  
+            			// Conflitto con voli in arrivo sulla stessa pista
+            			if (v.getDestinazione().equals(aeroporto)) {
+            				if (!(mioOrario.plusMinutes(30).isBefore(v.getOrarioPartenza().plusMinutes(30 + v.calcolaTempo())) ||
+            						mioOrario.isAfter(v.getOrarioPartenza().plusMinutes(30 + v.calcolaTempo())))) {
+            					libera = false;
+            					break;
+            				}
+            			}
+            		}  
+            	}
             }
 
             // Se la pista è libera, assegna

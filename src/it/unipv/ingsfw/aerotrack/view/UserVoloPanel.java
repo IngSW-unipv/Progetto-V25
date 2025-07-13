@@ -180,7 +180,9 @@ public class UserVoloPanel extends JPanel {
 
             for (Volo v : risultati) {
             	StatoVolo stato = StatoVolo.ATTERRATO;
+            	
             	if(v.getDataVolo().isEqual(LocalDate.now())) stato = v.calcolaStato(LocalTime.now());
+            	if(v.getDataVolo().isAfter(LocalDate.now())) stato = StatoVolo.PROGRAMMATO;
 
                 tableModel.addRow(new Object[]{
                     v.getCodice(),
@@ -205,45 +207,38 @@ public class UserVoloPanel extends JPanel {
     }
     
     private void aggiornaTabella() {
-        LocalTime orario = LocalTime.now();
+        LocalDate oggi = LocalDate.now();
+        LocalTime adesso = LocalTime.now();
 
         tableModel.setRowCount(0);
+
         for (Volo v : voloService.getTuttiVoli()) {
             StatoVolo stato = StatoVolo.PROGRAMMATO;
-            
-            if (!v.getDataVolo().equals(LocalDate.now())) continue;
+            LocalDate dataVolo = v.getDataVolo();
+            LocalTime partenza = v.getOrarioPartenza().plusMinutes(v.getRitardo().toSecondOfDay() / 60);
+            LocalTime fineAtterraggio = partenza.plusMinutes(30 + v.calcolaTempo() + 30); // 30 taxi out + tempo volo + 30 taxi in
 
-            int ritardoMin = v.getRitardo().toSecondOfDay() / 60;
-            LocalTime partenzaReale = v.getOrarioPartenza().plusMinutes(ritardoMin);
-            LocalTime finePartenza = partenzaReale.plusMinutes(30);
-            LocalTime fineVolo = finePartenza.plusMinutes(v.calcolaTempo());
-            LocalTime fineAtterraggio = fineVolo.plusMinutes(30);
+            // SE il volo è di un giorno precedente → SKIP
+            if (dataVolo.isBefore(oggi)) continue;
 
-            if(v.getRitardo().isAfter(LocalTime.of(2, 0))) {
-            	stato = StatoVolo.CANCELLATO;
-            } else {
-            	 if (orario.isAfter(v.getOrarioPartenza()) && orario.isBefore(partenzaReale)) {
-                     stato = StatoVolo.IN_ATTESA;
-                 } else if (!orario.isBefore(partenzaReale) && orario.isBefore(finePartenza)) {
-                     stato = StatoVolo.IN_PARTENZA;
-                 } else if (!orario.isBefore(finePartenza) && orario.isBefore(fineVolo)) {
-                     stato = StatoVolo.IN_VOLO;
-                 } else if (!orario.isBefore(fineVolo) && orario.isBefore(fineAtterraggio)) {
-                     stato = StatoVolo.ATTERRATO;
-                 } else if (orario.isAfter(fineAtterraggio)) {
-                     continue; // Escludi volo atterrato da più di 30 minuti
-                 }
+            // SE il volo è oggi ma già atterrato da più di 30 min → SKIP
+            if (dataVolo.isEqual(oggi) && adesso.isAfter(fineAtterraggio)) continue;
+
+            // Altrimenti → mostralo
+            if (dataVolo.isEqual(oggi)) {
+                stato = v.calcolaStato(adesso);
             }
-           
+
             tableModel.addRow(new Object[]{
                 v.getCodice(),
                 v.getPartenza().getCodice(),
                 v.getDestinazione().getCodice(),
                 v.getOrarioPartenza(),
-                v.getRitardo().toSecondOfDay() > 0 ? (ritardoMin) + "'" : "-",
+                v.getRitardo().toSecondOfDay() > 0 ? (v.getRitardo().toSecondOfDay() / 60) + "'" : "-",
                 stato
             });
         }
     }
+
 
 }
