@@ -2,6 +2,7 @@ package it.unipv.ingsfw.aerotrack.view;
 
 import it.unipv.ingsfw.aerotrack.models.Aeroporto;
 import it.unipv.ingsfw.aerotrack.models.Volo;
+import it.unipv.ingsfw.aerotrack.models.Volo.StatoVolo;
 import it.unipv.ingsfw.aerotrack.services.AeroportoService;
 import it.unipv.ingsfw.aerotrack.services.VoloService;
 
@@ -176,6 +177,8 @@ public class StaffVoloPanel extends JPanel {
     private void aggiornaTabella() {
         model.setRowCount(0);
         for (Volo v : voloService.getTuttiVoli()) {
+        	StatoVolo stato = StatoVolo.ATTERRATO;
+        	if(v.getDataVolo().isEqual(LocalDate.now())) stato = v.calcolaStato(LocalTime.now());
             model.addRow(new Object[]{
                 v.getCodice(),
                 v.getPartenza().getCodice(),
@@ -184,7 +187,7 @@ public class StaffVoloPanel extends JPanel {
                 v.getDataVolo(),
                 v.getRitardo().toSecondOfDay() > 0 ? (v.getRitardo().toSecondOfDay() / 60) + "'" : "-",
                 (v.getPistaAssegnata() >= 0 ? v.getPistaAssegnata(): "-"),
-                v.calcolaStato(LocalTime.now())
+                stato
             });
         }
     }

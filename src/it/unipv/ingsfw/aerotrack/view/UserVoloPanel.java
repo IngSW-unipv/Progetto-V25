@@ -1,6 +1,8 @@
 package it.unipv.ingsfw.aerotrack.view;
 
 import it.unipv.ingsfw.aerotrack.models.Aeroporto;
+
+
 import it.unipv.ingsfw.aerotrack.models.Volo;
 import it.unipv.ingsfw.aerotrack.models.Volo.StatoVolo;
 import it.unipv.ingsfw.aerotrack.services.*;
@@ -8,7 +10,7 @@ import it.unipv.ingsfw.aerotrack.services.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.List;
 
 public class UserVoloPanel extends JPanel {
@@ -58,6 +60,13 @@ public class UserVoloPanel extends JPanel {
             }
 
             String codice = (String) tableModel.getValueAt(row, 0);
+            Volo volo = voloService.cercaVolo(codice);
+
+            if (volo.getDataVolo().isBefore(LocalDate.now()) || (volo.getDataVolo().isEqual(LocalDate.now())) && (volo.getOrarioPartenza().isBefore(LocalTime.now()))) {
+                JOptionPane.showMessageDialog(this, "Il volo non è più prenotabile.");
+                return;
+            }
+            
             JTextField nome = new JTextField();
             JTextField cognome = new JTextField();
 
@@ -67,8 +76,8 @@ public class UserVoloPanel extends JPanel {
             };
 
             int res = JOptionPane.showConfirmDialog(this, fields, "Nuova Prenotazione", JOptionPane.OK_CANCEL_OPTION);
-            if (res == JOptionPane.OK_OPTION) {
-                try {
+            if (res == JOptionPane.OK_OPTION) {            	
+            	try {
                     prenotazioneService.creaPrenotazione(
                             nome.getText().trim(),
                             cognome.getText().trim(),
@@ -101,12 +110,14 @@ public class UserVoloPanel extends JPanel {
             destinazioneCombo.insertItemAt("", 0);
             destinazioneCombo.setSelectedIndex(0);
 
-            JTextField orarioField = new JTextField();
+            JTextField orarioField = new JTextField(LocalTime.now().withSecond(0).withNano(0).toString());
+            JTextField dataField = new JTextField(LocalDate.now().toString());
 
             Object[] fields = {
                 "Aeroporto di partenza:", partenzaCombo,
                 "Aeroporto di destinazione:", destinazioneCombo,
-                "Orario di riferimento (HH:mm):", orarioField
+                "Orario di riferimento (HH:mm):", orarioField,
+                "Data di riferimento (year-month-date):", dataField
             };
 
             int res = JOptionPane.showConfirmDialog(this, fields, "Cerca volo", JOptionPane.OK_CANCEL_OPTION);
@@ -115,8 +126,10 @@ public class UserVoloPanel extends JPanel {
             String partenza = (String) partenzaCombo.getSelectedItem();
             String destinazione = (String) destinazioneCombo.getSelectedItem();
             String orarioStr = orarioField.getText().trim();
+            String dataStr = dataField.getText().trim();
 
             LocalTime orario = null;
+            LocalDate data = null;
             if (!orarioStr.isEmpty()) {
                 try {
                     orario = LocalTime.parse(orarioStr);
@@ -124,47 +137,50 @@ public class UserVoloPanel extends JPanel {
                     JOptionPane.showMessageDialog(this, "Orario non valido (usa formato HH:mm)", "Errore", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+                
+            }	
+            
+            if (!dataStr.isEmpty()) {
+            	try {
+            		data = LocalDate.parse(dataStr);
+            	} catch (Exception ex) {
+            		JOptionPane.showMessageDialog(this, "Data non valido (usa formato year-month-date)", "Errore", JOptionPane.ERROR_MESSAGE);
+            		return;
+            	}    
             }
 
             LocalTime finalOrario = orario;
+            LocalDate finalData = data;
 
             List<Volo> risultati = voloService.getTuttiVoli().stream()
-                .filter(v -> partenza.isEmpty() || v.getPartenza().getCodice().equalsIgnoreCase(partenza))
-                .filter(v -> destinazione.isEmpty() || v.getDestinazione().getCodice().equalsIgnoreCase(destinazione))
-                .filter(v -> {
-                    if (finalOrario == null) return true;
+            	    .filter(v -> {
+            	        if (partenza != null && !partenza.isEmpty() && !v.getPartenza().getCodice().equals(partenza)) {
+            	            return false;
+            	        }
+            	        if (destinazione != null && !destinazione.isEmpty() && !v.getDestinazione().getCodice().equals(destinazione)) {
+            	            return false;
+            	        }
 
-                    int ritardoMin = v.getRitardo().toSecondOfDay() / 60;
-                    LocalTime partenzaReale = v.getOrarioPartenza().plusMinutes(ritardoMin);
-                    LocalTime fineAtterraggio = partenzaReale.plusMinutes(30 + v.calcolaTempo() + 30);
-                    return !finalOrario.isAfter(fineAtterraggio); // Se è dopo +30m dall'atterraggio, escludi
-                })
-                .toList();
+            	        if (finalOrario != null && finalData != null) {
+            	            LocalDateTime riferimento = LocalDateTime.of(finalData, finalOrario);
+            	            LocalDateTime partenzaReale = LocalDateTime.of(v.getDataVolo(), v.getOrarioPartenza())
+            	                .plusMinutes(v.getRitardo().toSecondOfDay() / 60);
+            	            LocalDateTime fineAtterraggio = partenzaReale.plusMinutes(30 + v.calcolaTempo() + 30);
+
+            	            if (riferimento.isAfter(fineAtterraggio)) {
+            	                return false;
+            	            }
+            	        }
+
+            	        return true;
+            	    })
+            	    .toList();
 
             tableModel.setRowCount(0);
 
             for (Volo v : risultati) {
-                StatoVolo stato = StatoVolo.PROGRAMMATO;
-
-                if (finalOrario != null) {
-                    int ritardoMin = v.getRitardo().toSecondOfDay() / 60;
-                    LocalTime partenzaReale = v.getOrarioPartenza().plusMinutes(ritardoMin);
-                    LocalTime inPartenzaFine = partenzaReale.plusMinutes(30);
-                    LocalTime inVoloFine = inPartenzaFine.plusMinutes(v.calcolaTempo());
-                    LocalTime atterraggioFine = inVoloFine.plusMinutes(30);
-
-                    if (orario.isAfter(v.getOrarioPartenza()) 
-                         	&& orario.isBefore(v.getOrarioPartenza().plusMinutes(v.getRitardo().toSecondOfDay() / 60))) stato = StatoVolo.IN_ATTESA;
-                    if (!finalOrario.isBefore(partenzaReale) && finalOrario.isBefore(inPartenzaFine)) {
-                        stato = StatoVolo.IN_PARTENZA;
-                    } else if (!finalOrario.isBefore(inPartenzaFine) && finalOrario.isBefore(inVoloFine)) {
-                        stato = StatoVolo.IN_VOLO;
-                    } else if (!finalOrario.isBefore(inVoloFine) && finalOrario.isBefore(atterraggioFine)) {
-                        stato = StatoVolo.ATTERRATO;
-                    } else if (finalOrario.isAfter(atterraggioFine)) {
-                        continue; // Escludi volo atterrato da più di 30 min
-                    }
-                }
+            	StatoVolo stato = StatoVolo.ATTERRATO;
+            	if(v.getDataVolo().isEqual(LocalDate.now())) stato = v.calcolaStato(LocalTime.now());
 
                 tableModel.addRow(new Object[]{
                     v.getCodice(),
@@ -194,6 +210,8 @@ public class UserVoloPanel extends JPanel {
         tableModel.setRowCount(0);
         for (Volo v : voloService.getTuttiVoli()) {
             StatoVolo stato = StatoVolo.PROGRAMMATO;
+            
+            if (!v.getDataVolo().equals(LocalDate.now())) continue;
 
             int ritardoMin = v.getRitardo().toSecondOfDay() / 60;
             LocalTime partenzaReale = v.getOrarioPartenza().plusMinutes(ritardoMin);
@@ -201,18 +219,22 @@ public class UserVoloPanel extends JPanel {
             LocalTime fineVolo = finePartenza.plusMinutes(v.calcolaTempo());
             LocalTime fineAtterraggio = fineVolo.plusMinutes(30);
 
-            if (orario.isAfter(v.getOrarioPartenza()) && orario.isBefore(partenzaReale)) {
-                stato = StatoVolo.IN_ATTESA;
-            } else if (!orario.isBefore(partenzaReale) && orario.isBefore(finePartenza)) {
-                stato = StatoVolo.IN_PARTENZA;
-            } else if (!orario.isBefore(finePartenza) && orario.isBefore(fineVolo)) {
-                stato = StatoVolo.IN_VOLO;
-            } else if (!orario.isBefore(fineVolo) && orario.isBefore(fineAtterraggio)) {
-                stato = StatoVolo.ATTERRATO;
-            } else if (orario.isAfter(fineAtterraggio)) {
-                continue; // Escludi volo atterrato da più di 30 minuti
+            if(v.getRitardo().isAfter(LocalTime.of(2, 0))) {
+            	stato = StatoVolo.CANCELLATO;
+            } else {
+            	 if (orario.isAfter(v.getOrarioPartenza()) && orario.isBefore(partenzaReale)) {
+                     stato = StatoVolo.IN_ATTESA;
+                 } else if (!orario.isBefore(partenzaReale) && orario.isBefore(finePartenza)) {
+                     stato = StatoVolo.IN_PARTENZA;
+                 } else if (!orario.isBefore(finePartenza) && orario.isBefore(fineVolo)) {
+                     stato = StatoVolo.IN_VOLO;
+                 } else if (!orario.isBefore(fineVolo) && orario.isBefore(fineAtterraggio)) {
+                     stato = StatoVolo.ATTERRATO;
+                 } else if (orario.isAfter(fineAtterraggio)) {
+                     continue; // Escludi volo atterrato da più di 30 minuti
+                 }
             }
-
+           
             tableModel.addRow(new Object[]{
                 v.getCodice(),
                 v.getPartenza().getCodice(),

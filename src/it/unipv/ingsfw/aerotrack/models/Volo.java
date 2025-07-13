@@ -249,8 +249,8 @@ public class Volo{
             boolean libera = true;
 
             for (Volo v : aeroporto.getPiste()[i]) {
-            	
-                    // Conflitto con altri voli in partenza sulla stessa pista
+            	if(v.getDataVolo().isEqual(dataVolo)) {
+            		   // Conflitto con altri voli in partenza sulla stessa pista
                     if (v.getPartenza().equals(aeroporto)) {
                         if (!(mioOrario.plusMinutes(30).isBefore(v.getOrarioPartenza()) ||
                               mioOrario.isAfter(v.getOrarioPartenza().plusMinutes(30)))) {
@@ -267,7 +267,8 @@ public class Volo{
                             break;
                         }
                     }
-            	}
+            	}  
+            }
 
             // Se la pista è libera, assegna
             if (libera) {
@@ -313,10 +314,12 @@ public class Volo{
 
         for (int i = 0; i < partenza.getNumeroPiste(); i++) {
             for (Volo v : partenza.getPiste()[i]) {
-                if (v.getOrarioPartenza().plusMinutes(30).isAfter(orarioPartenza) && v.getOrarioPartenza().plusMinutes(30).isBefore(primoDisponibile)) {
-                    primoDisponibile = v.getOrarioPartenza().plusMinutes(30);
-                    pistaScelta = i;
-                }
+            	if(v.getDataVolo().isEqual(dataVolo)) {
+            		 if (v.getOrarioPartenza().plusMinutes(30).isAfter(orarioPartenza) && v.getOrarioPartenza().plusMinutes(30).isBefore(primoDisponibile)) {
+                         primoDisponibile = v.getOrarioPartenza().plusMinutes(30);
+                         pistaScelta = i;
+                     }
+            	}
             }
         }
 
@@ -334,6 +337,7 @@ public class Volo{
      */
     public StatoVolo calcolaStato(LocalTime orario) {
     	stato = StatoVolo.PROGRAMMATO;
+        if((ritardo.isAfter(LocalTime.of(2, 0)))) return StatoVolo.CANCELLATO;
     	if ( orario.isAfter(orarioPartenza)
             && orario.isBefore(orarioPartenza.plusMinutes(ritardo.toSecondOfDay() / 60))) return StatoVolo.IN_ATTESA;
         if ((orario.equals(orarioPartenza.plusMinutes(ritardo.toSecondOfDay() / 60)) || orario.isAfter(orarioPartenza.plusMinutes(ritardo.toSecondOfDay() / 60))) 
@@ -341,6 +345,7 @@ public class Volo{
         if ((orario.equals(orarioPartenza.plusMinutes(30 + ritardo.toSecondOfDay() / 60))) || orario.isAfter(orarioPartenza.plusMinutes(30 + ritardo.toSecondOfDay() / 60))
             && orario.isBefore(orarioPartenza.plusMinutes(30 + calcolaTempo() + ritardo.toSecondOfDay() / 60))) return StatoVolo.IN_VOLO;
         if (orario.isAfter(orarioPartenza.plusMinutes(30 + calcolaTempo() + ritardo.toSecondOfDay() / 60))) return StatoVolo.ATTERRATO;
+
         return stato;
     }
     

@@ -45,7 +45,7 @@ public class Main {
         voloService.creaVolo("AZ124", "MXP", "FCO", LocalTime.of(14, 45), 850, dataTest);
         voloService.creaVolo("AZ125", "MXP", "FCO", LocalTime.of(14, 50), 850, dataTest);
         voloService.creaVolo("AZ126", "FCO", "MXP", LocalTime.of(14, 30), 900, dataTest);
-        voloService.creaVolo("AZ127", "MXP", "FCO", LocalTime.of(20, 00), 800, dataTest);
+        voloService.creaVolo("AZ127", "MXP", "FCO", LocalTime.of(20, 00), 800, LocalDate.of(2025, 7, 12));
         voloService.creaVolo("AZ128", "LIN", "NAP", LocalTime.of(10, 00), 850, dataTest);
 
         System.out.println("\nVoli registrati:");

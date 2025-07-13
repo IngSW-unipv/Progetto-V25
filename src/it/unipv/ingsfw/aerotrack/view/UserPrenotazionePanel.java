@@ -1,8 +1,9 @@
 package it.unipv.ingsfw.aerotrack.view;
 
 import it.unipv.ingsfw.aerotrack.models.Prenotazione;
+
 import it.unipv.ingsfw.aerotrack.models.Volo;
-import it.unipv.ingsfw.aerotrack.services.PrenotazioneService;
+import it.unipv.ingsfw.aerotrack.services.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -10,6 +11,7 @@ import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalTime;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -17,6 +19,7 @@ import java.util.List;
  */
 public class UserPrenotazionePanel extends JPanel {
     private final PrenotazioneService prenotazioneService;
+    private final VoloService voloService;
     private final DefaultTableModel tableModel;
     private final JTable table;
     private final String codiceFiscaleUtente;
@@ -25,6 +28,7 @@ public class UserPrenotazionePanel extends JPanel {
     public UserPrenotazionePanel(String codiceFiscaleUtente) {
         this.codiceFiscaleUtente = codiceFiscaleUtente;
         this.prenotazioneService = PrenotazioneService.getInstance();
+        this.voloService = VoloService.getInstance();
         setLayout(new BorderLayout());
         
         // Tabella prenotazioni
@@ -60,8 +64,20 @@ public class UserPrenotazionePanel extends JPanel {
                     "Codice volo:", codiceVolo
             };
             int res = JOptionPane.showConfirmDialog(this, fields, "Nuova Prenotazione", JOptionPane.OK_CANCEL_OPTION);
+            Volo volo = voloService.cercaVolo(codiceVolo.getText());
             if (res == JOptionPane.OK_OPTION) {
-                try {
+            	  if (volo.getDataVolo().isBefore(LocalDate.now())) {
+                      JOptionPane.showMessageDialog(this, "Il volo è di un giorno precedente a oggi.", "Volo non valido", JOptionPane.WARNING_MESSAGE);
+                      return;
+                  }
+
+                  if (volo.getDataVolo().isEqual(LocalDate.now()) && volo.getOrarioPartenza().isBefore(LocalTime.now())) {
+                      JOptionPane.showMessageDialog(this, "Il volo non è più prenotabile.", "Volo non valido", JOptionPane.WARNING_MESSAGE);
+                      return;
+                  }
+
+            	
+            	try {
                     prenotazioneService.creaPrenotazione(
                             nome.getText().trim(),
                             cognome.getText().trim(),
@@ -179,6 +195,7 @@ public class UserPrenotazionePanel extends JPanel {
         List<Prenotazione> prenotazioni = prenotazioneService.getTuttePrenotazioni();
         for (Prenotazione p : prenotazioni) {
         	// FILTRO: solo le prenotazioni del codice fiscale utente (cioè del documento)
+            if (!p.getVolo().getDataVolo().equals(LocalDate.now())) continue;
             if (p.getPasseggero().getDocumento().equalsIgnoreCase(codiceFiscaleUtente)) {
             	// Notifica utente se il volo è in ritardo o cancellato
             	if (p.getVolo() != null) {

@@ -112,9 +112,7 @@ public class VoloService {
      * Restituisce tutti i voli.
      */
     public List<Volo> getTuttiVoli() {
-        LocalDate oggi = LocalDate.now();
         return voloDao.getTuttiVoli().stream()
-                .filter(v -> v.getDataVolo().isAfter(oggi) || v.getDataVolo().isEqual(oggi))
                 .collect(Collectors.toList());
     }
 
