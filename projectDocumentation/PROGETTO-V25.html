@@ -47,9 +47,9 @@
         }
 
         nav.quick-menu {
-            position: absolute;
-            left: 16px;
-            top: 20px;
+            position: fixed;
+            left: 24px;
+            top: 40px;
             z-index: 10;
             display: flex;
             flex-direction: column;
@@ -74,7 +74,8 @@
 
         section.slide {
             width: 100%; height: 100%;
-            padding: 48px 28px 90px 28px;
+            padding: 48px 28px 90px 100px;
+            
             position: absolute;
             top: 0; left: 0;
             opacity: 0; pointer-events: none;
@@ -125,6 +126,14 @@
             align-items: center;
             background: var(--main-bg);
         }
+        .slide-counter {
+         position: absolute;
+    bottom: 8px; /* più vicino al bordo */
+    right: 28px;
+    color: #7f8c8d;
+    font-size: 1em;
+    letter-spacing: 0.5px;
+} 
         .cover-content {
             background: #fff;
             border-radius: 22px;
@@ -288,15 +297,15 @@
             <button onclick="goToSlide(1)" id="quick1" aria-label="Introduzione">Intro</button>
             <button onclick="goToSlide(2)" id="quick2" aria-label="Unified Process">UP</button>
             <button onclick="goToSlide(3)" id="quick3" aria-label="Fasi">Fasi</button>
-            <button onclick="goToSlide(3)" id="quick3" aria-label="Fasi">Fasi</button>
-            <button onclick="goToSlide(4)" id="quick4" aria-label="Requisiti">Req</button>
-            <button onclick="goToSlide(5)" id="quick5" aria-label="Casi d'Uso">Casi</button>
+            <button onclick="goToSlide(4)" id="quick3" aria-label="Fasi">Fasi</button>
+            <button onclick="goToSlide(5)" id="quick4" aria-label="Requisiti">Req</button>
             <button onclick="goToSlide(6)" id="quick5" aria-label="Casi d'Uso">Casi</button>
-            <button onclick="goToSlide(7)" id="quick6" aria-label="Interfaccia">UI</button>
-            <button onclick="goToSlide(8)" id="quick7" aria-label="Funzionalità">Funz.</button>
-            <button onclick="goToSlide(9)" id="quick8" aria-label="Database">DB</button>
-            <button onclick="goToSlide(10)" id="quick9" aria-label="Progettazione">Arch</button>
-            <button onclick="goToSlide(11)" id="quick10" aria-label="Grazie">🙏</button>
+            <button onclick="goToSlide(7)" id="quick5" aria-label="Casi d'Uso">Casi</button>
+            <button onclick="goToSlide(8)" id="quick6" aria-label="Interfaccia">UI</button>
+            <button onclick="goToSlide(9)" id="quick7" aria-label="Funzionalità">Funz.</button>
+            <button onclick="goToSlide(10)" id="quick8" aria-label="Database">DB</button>
+            <button onclick="goToSlide(11)" id="quick9" aria-label="Progettazione">Arch</button>
+            <button onclick="goToSlide(12)" id="quick10" aria-label="Grazie">🙏</button>
         </nav>
 
         <!-- SLIDE 0 - COPERTINA -->
@@ -538,7 +547,7 @@
     </div>
     <div class="slide-counter">5/13</div>
 </section>
-<!-- Slide 4: Requisiti -->
+<!-- Slide 6: Requisiti -->
         <section class="slide" aria-label="Requisiti">
             <h1>Requisiti del Sistema</h1>
             <div class="features-grid">
@@ -572,7 +581,7 @@
             </div>
             <div class="slide-counter">6/13</div>
         </section>
-        <!-- Slide 5: Casi d'Uso -->
+        <!-- Slide 7: Casi d'Uso -->
         <section class="slide" aria-label="Casi d'Uso">
     <h1 style="text-align:center;">Casi d'Uso</h1>
     <div style="display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; justify-content: center;">
@@ -585,12 +594,12 @@
             <div style="margin-bottom:12px;">
                 <b>Casi d’uso significativi:</b>
                 <ul style="margin-top:6px;">
-                    <li><b>UC1.</b> Autenticazione</li>
-                    <li><b>UC2.</b> Autenticazione Utente e Staff</li>
-                    <li><b>UC3.</b> Ricerca di Dati (Voli e Prenotazioni)</li>
-                    <li><b>UC4.</b> Gestione Prenotazione (Prenotazione/Cancellazione)</li>
-                    <li><b>UC5.</b> Gestione voli (aggiunta/eliminazione)</li>
-                    <li><b>UC6.</b> Modifica stato/ritardo di un volo</li>
+                    
+                    <li><b>UC1.</b> Autenticazione Utente e Staff</li>
+                    <li><b>UC2.</b> Ricerca di Dati (Voli e Prenotazioni)</li>
+                    <li><b>UC3.</b> Gestione Prenotazione (Prenotazione/Cancellazione)</li>
+                    <li><b>UC4.</b> Gestione voli (aggiunta/eliminazione)</li>
+                    <li><b>UC5.</b> Modifica stato/ritardo di un volo</li>
                 </ul>
             </div>
             <p>
@@ -671,7 +680,7 @@
     </div>
     <div class="slide-counter">7/13</div>
 </section>
-        <!-- Slide 6: Casi d'Uso -->
+        <!-- Slide 8: Casi d'Uso -->
         <section class="slide" aria-label="Casi d'Uso">
             <h1>Casi d'Uso Principali</h1>
             <h3>👤 Scenario Utente</h3>
@@ -709,7 +718,7 @@
             </p>
             <div class="slide-counter">8/13</div>
         </section>
-        <!-- Slide 7: Interfaccia Grafica -->
+        <!-- Slide 9: Interfaccia Grafica -->
         <section class="slide" aria-label="Interfaccia">
             <h1>Interfaccia Grafica</h1>
             <h2>Semplicità ed Efficienza</h2>
@@ -738,7 +747,7 @@
             </div>
             <div class="slide-counter">9/13</div>
         </section>
-        <!-- Slide 8: Funzionalità -->
+        <!-- Slide 10: Funzionalità -->
         <section class="slide" aria-label="Funzionalità">
             <h1>Funzionalità Implementate</h1>
             <h2>Tutto Ciò che Serve per Gestire un Aeroporto</h2>
@@ -766,7 +775,7 @@
             </div>
             <div class="slide-counter">10/13</div>
         </section>
-        <!-- Slide 9: Database -->
+        <!-- Slide 11: Database -->
         <section class="slide" aria-label="Database">
             <h1>Database e Persistenza</h1>
             <h2>Un Database Solido per la Sicurezza dei Dati</h2>
@@ -808,7 +817,7 @@
             </div>
             <div class="slide-counter">11/13</div>
         </section>
-        <!-- Slide 10: Progettazione -->
+        <!-- Slide 12: Progettazione -->
         <section class="slide" aria-label="Progettazione">
             <h1>Progettazione del Sistema</h1>
             <h2>Architettura Object-Oriented Modulare</h2>
@@ -863,7 +872,7 @@
         
       
         
-        <!-- Slide 11: Grazie -->
+        <!-- Slide 13: Grazie -->
 <section class="slide" aria-label="Grazie">
     <div class="thank-you">
         <!-- Logo AeroTrack -->
@@ -909,10 +918,11 @@
         </div>
         <h1>Grazie per l'attenzione!</h1>
         <p>Domande e curiosità sono benvenute.</p>
-    </div>
-    <div class="slide-counter">13/13</div>
-</section>
-        
+    
+                
+            </div>
+            <div class="slide-counter">13/13</div>
+        </section>
         <!-- Navigation -->
         <div class="navigation">
             <button class="nav-btn" onclick="previousSlide()" id="prevBtn">← Precedente</button>

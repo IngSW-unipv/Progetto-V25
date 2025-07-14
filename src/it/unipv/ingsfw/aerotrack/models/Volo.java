@@ -1,6 +1,5 @@
 package it.unipv.ingsfw.aerotrack.models;
 
-import it.unipv.ingsfw.aerotrack.models.Volo.StatoVolo;
 import it.unipv.ingsfw.aerotrack.utils.CalcolaDistanza;
 
 import java.time.LocalDate;

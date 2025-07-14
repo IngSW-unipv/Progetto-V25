@@ -121,5 +121,4 @@ public class Prenotazione {
     public int hashCode() {
         return Objects.hash(codicePrenotazione);
     }
-    
 }

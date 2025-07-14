@@ -179,6 +179,7 @@ public class StaffVoloPanel extends JPanel {
         for (Volo v : voloService.getTuttiVoli()) {
         	StatoVolo stato = StatoVolo.ATTERRATO;
         	if(v.getDataVolo().isEqual(LocalDate.now())) stato = v.calcolaStato(LocalTime.now());
+        	if(v.getDataVolo().isAfter(LocalDate.now())) stato = StatoVolo.PROGRAMMATO;
             model.addRow(new Object[]{
                 v.getCodice(),
                 v.getPartenza().getCodice(),

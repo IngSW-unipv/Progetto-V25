@@ -149,6 +149,5 @@ public class VoloService {
         public VoloNonTrovatoException(String codice) {
             super("Volo non trovato: " + codice);
         }
-    }
-    
+    }  
 }

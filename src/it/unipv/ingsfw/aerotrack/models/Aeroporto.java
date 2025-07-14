@@ -203,6 +203,4 @@ public class Aeroporto {
    public int hashCode() {
        return Objects.hash(codice);
    }
-
 }
-

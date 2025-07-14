@@ -239,6 +239,4 @@ public class UserVoloPanel extends JPanel {
             });
         }
     }
-
-
 }

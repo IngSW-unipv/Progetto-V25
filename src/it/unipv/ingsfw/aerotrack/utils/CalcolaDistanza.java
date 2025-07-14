@@ -61,5 +61,4 @@ public class CalcolaDistanza {
 		
 		return R * c;      // Calcolo della distanza finale moltiplicando per il raggio terrestre
 	}
-
 }

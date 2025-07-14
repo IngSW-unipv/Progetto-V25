@@ -51,6 +51,3 @@ public class TestFacade {
                 + ", Partenza: " + v.getOrarioPartenza() + ", Data: " + v.getDataVolo() + ", Passeggeri: " + numPrenotazioni);
         }
 }
-
-
-// cosa ne pensii???
