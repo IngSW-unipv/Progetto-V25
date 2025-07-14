@@ -33,7 +33,7 @@ public class UserVoloPanel extends JPanel {
         setLayout(new BorderLayout());
 
         // Tabella
-        tableModel = new DefaultTableModel(new Object[]{"Codice", "Partenza", "Destinazione", "Orario", "Ritardo", "Stato"}, 0) {
+        tableModel = new DefaultTableModel(new Object[]{"Codice", "Partenza", "Destinazione", "Orario", "data", "Ritardo", "Stato"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
@@ -189,6 +189,7 @@ public class UserVoloPanel extends JPanel {
                     v.getPartenza().getCodice(),
                     v.getDestinazione().getCodice(),
                     v.getOrarioPartenza(),
+                    v.getDataVolo(),
                     v.getRitardo().toSecondOfDay() > 0 ? (v.getRitardo().toSecondOfDay() / 60) + "'" : "-",
                     stato
                 });
@@ -234,9 +235,12 @@ public class UserVoloPanel extends JPanel {
                 v.getPartenza().getCodice(),
                 v.getDestinazione().getCodice(),
                 v.getOrarioPartenza(),
+                v.getDataVolo(),
                 v.getRitardo().toSecondOfDay() > 0 ? (v.getRitardo().toSecondOfDay() / 60) + "'" : "-",
                 stato
             });
         }
     }
+
+
 }
